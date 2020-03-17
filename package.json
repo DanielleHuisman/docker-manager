@@ -29,6 +29,7 @@
         "build": "yarn run clean && yarn run build:ts && yarn run build:views",
         "build:ts": "tsc",
         "build:views": "mkdir -p dist/views && cp -r src/views dist",
+        "prepublish": "yarn run build",
         "start": "dotenv -- node dist/index.js",
         "dev": "dotenv -- nodemon -w src -e ts,graphql -x ts-node src/index.ts",
         "dev:cli": "ts-node src/cli.ts"
