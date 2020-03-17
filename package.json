@@ -36,10 +36,13 @@
     },
     "dependencies": {
         "@danielhuisman/koa-base": "^1.0.5",
+        "@types/fs-extra": "^8.1.0",
         "@types/node": "^13.9.1",
         "@types/yargs": "^15.0.4",
+        "fs-extra": "^8.1.0",
         "koa-pug": "^4.0.3",
         "moment": "^2.24.0",
+        "yaml": "^1.8.2",
         "yargs": "^15.3.1"
     },
     "devDependencies": {

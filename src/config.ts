@@ -16,5 +16,9 @@ export default {
         maxAge: parseInt(process.env.STATIC_MAX_AGE, 10) || 30 * 24 * 60 * 60,
         externalUrl: staticExternalUrl,
         path: staticPath
+    },
+
+    applications: {
+        path: path.resolve(process.env.APPLICATIONS_PATH || '/srv/docker')
     }
 };
