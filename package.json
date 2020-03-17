@@ -30,11 +30,11 @@
         "moment": "^2.24.0"
     },
     "devDependencies": {
-        "dotenv-cli": "^2.0.0",
-        "nodemon": "^1.19.1",
-        "rimraf": "^2.6.3",
+        "dotenv-cli": "^3.1.0",
+        "nodemon": "^2.0.2",
+        "rimraf": "^3.0.2",
         "ts-node": "^8.2.0",
-        "tslint": "^5.17.0",
+        "tslint": "^6.1.0",
         "typescript": "^3.5.2"
     }
 }
