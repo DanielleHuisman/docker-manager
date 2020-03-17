@@ -14,6 +14,15 @@
         "image",
         "management"
     ],
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist",
+        "LICENSE.md",
+        "README.md",
+        "package.json"
+    ],
+    "bin": "./dist/cli.js",
     "scripts": {
         "lint": "tslint -c tslint.json -p tsconfig.json",
         "clean": "rimraf dist",
@@ -21,7 +30,8 @@
         "build:ts": "tsc",
         "build:views": "mkdir -p dist/views && cp -r src/views dist",
         "start": "dotenv -- node dist/index.js",
-        "dev": "dotenv -- nodemon -w src -e ts,graphql -x ts-node src/index.ts"
+        "dev": "dotenv -- nodemon -w src -e ts,graphql -x ts-node src/index.ts",
+        "dev:cli": "ts-node src/cli.ts"
     },
     "dependencies": {
         "@danielhuisman/koa-base": "^1.0.5",

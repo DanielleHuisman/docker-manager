@@ -17,6 +17,7 @@
             "named-imports-order": "any"
         }],
         "no-bitwise": false,
+        "no-console": false,
         "max-classes-per-file": false
     },
     "rulesDirectory": []
