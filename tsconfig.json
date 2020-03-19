@@ -18,7 +18,8 @@
         "experimentalDecorators": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "declaration": true
+        "declaration": true,
+        "resolveJsonModule": true
     },
     "include": [
         "src/**/*"
