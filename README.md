@@ -43,16 +43,19 @@ Docker Manager CLI
 docker-manager <command>
 
 Commands:
-  docker-manager version                             Displays version information
-  docker-manager list                                Lists applications
-  docker-manager services <application>              List services of an application
-  docker-manager start <application> [services..]    Start an application
-  docker-manager stop <application> [services..]     Stop an application
-  docker-manager restart <application> [services..]  Restart an application
-  docker-manager status <application> [services..]   Display status of an application                      [aliases: ps]
-  docker-manager top <application> [services..]      Display running processes of an application
-  docker-manager images <application> [services..]   Display images of an application
-  docker-manager logs <application> [services..]     Display logs of an application
+  docker-manager version                                        Displays version information
+  docker-manager list                                           Lists applications
+  docker-manager services <application>                         List services of an application
+  docker-manager start <application> [services..]               Start an application
+  docker-manager stop <application> [services..]                Stop an application
+  docker-manager restart <application> [services..]             Restart an application
+  docker-manager update <application> [services..]              Update an application
+  docker-manager status <application> [services..]              Display status of an application           [aliases: ps]
+  docker-manager top <application> [services..]                 Display running processes of an application
+  docker-manager images <application> [services..]              Display images of an application
+  docker-manager logs <application> [services..]                Display logs of an application
+  docker-manager exec <application> <service> <command>         Execute a command in the container of a service
+  [arguments..]
 
 Options:
   --version  Show version number                                                                               [boolean]
@@ -114,4 +117,7 @@ docker-manager status hello-world
 
 # Display logs of the backend service of the hello-world application
 docker-manager logs -f hello-world hello-world-backend
+
+# Execute a command in the container of the backend service of the hello-world application
+docker-manager exec hello-world hello-world-backend ls -- -alh
 ```

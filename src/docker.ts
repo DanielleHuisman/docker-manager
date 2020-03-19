@@ -36,10 +36,15 @@ export const getServiceNames = async (applicationNames: string[]) => {
     return serviceNames;
 };
 
-export const execute = (command: string, args: string[], options?: SpawnOptions): Promise<void> => new Promise((resolve, reject) => {
-    const p = spawn(command, args, options);
-    p.stdout.pipe(process.stdout);
-    p.stderr.pipe(process.stderr);
+export const execute = (command: string, args: string[], forwardInput: boolean = false): Promise<void> => new Promise((resolve, reject) => {
+    const p = spawn(command, args, {
+        stdio: [forwardInput ? process.stdin : null, process.stdout, process.stderr]
+    });
+    // if (forwardInput) {
+    //     process.stdin.pipe(p.stdin);
+    // }
+    // p.stdout.pipe(process.stdout);
+    // p.stderr.pipe(process.stderr);
     p.on('exit', () => {
         resolve();
     });
@@ -48,12 +53,46 @@ export const execute = (command: string, args: string[], options?: SpawnOptions)
     });
 });
 
-export const executeAction = async (applicationNames: string[], action: string | string[]) => {
-    const fileArgs = ['common']
-        .concat(applicationNames)
-        .flatMap((applicationName) => ['-f', path.resolve(config.applications.path, `${applicationName}.yml`)]);
+export const getFileArguments = (applicationNames: string[]) => ['common']
+    .concat(applicationNames)
+    .flatMap((applicationName) => ['-f', path.resolve(config.applications.path, `${applicationName}.yml`)]);
 
-    const args = fileArgs.concat(Array.isArray(action) ? action : [action]);
+export const executeAction = async (applicationNames: string[], action: string | string[], forwardInput: boolean = false) => {
+    const args = getFileArguments(applicationNames).concat(Array.isArray(action) ? action : [action]);
 
-    await execute('docker-compose', args);
+    await execute('docker-compose', args, forwardInput);
+};
+
+export const spawnProcess = (command: string, args?: string[], options?: SpawnOptions, readError: boolean = false): Promise<string[]> =>
+    new Promise((fulfill, reject) => {
+        let lines = [];
+        const p = spawn(command, args, options);
+
+        const socket = readError ? p.stderr : p.stdout;
+
+        socket.on('data', (buffer) => {
+            const line = buffer.toString('utf8');
+            lines = lines.concat(line.split('\n'));
+        });
+
+        let fulfilled = false;
+        const finish = () => {
+            if (!fulfilled) {
+                fulfilled = true;
+                fulfill(lines);
+            }
+        };
+        socket.on('close', finish);
+        p.on('exit', finish);
+        p.on('error', (err) => {
+            return reject(err);
+        });
+    });
+
+export const getContainerId = async (applicationName: string, serviceName: string) => {
+    const args = getFileArguments([applicationName]).concat(['ps', '-q', serviceName]);
+
+    const output = await spawnProcess('docker-compose', args);
+
+    return output[0];
 };

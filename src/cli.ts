@@ -2,11 +2,12 @@
 
 import {ensureDir} from 'fs-extra';
 import yargs from 'yargs';
+import {getProcessArgvWithoutBin} from 'yargs/lib/process-argv';
 
 import packageInfo from '../package.json';
 
 import config from './config';
-import {getApplicationNames, getServiceNames, executeAction} from './docker';
+import {getApplicationNames, getServiceNames, execute, executeAction, getContainerId} from './docker';
 
 (async () => {
     console.log('Docker Manager CLI');
@@ -22,6 +23,30 @@ import {getApplicationNames, getServiceNames, executeAction} from './docker';
 
     // Find applications
     const applicationNames = await getApplicationNames();
+
+    // Hack to pass remaining arguments to exec command
+    let normalArguments: string[] = getProcessArgvWithoutBin();
+    let execArguments = [];
+    if (normalArguments.length > 0 && normalArguments[0].toLowerCase() === 'exec') {
+        let requiredArgs = 0;
+        let i = 1;
+        for (; i < normalArguments.length; i++) {
+            const arg = normalArguments[i];
+
+            // Skip argument of allowed flags
+            if (['-u', '--user', '-e', '--env'].includes(arg.toLowerCase())) {
+                i++;
+            } else {
+                requiredArgs++;
+            }
+
+            if (requiredArgs === 4) {
+                break;
+            }
+        }
+        execArguments = normalArguments.splice(i);
+        normalArguments = normalArguments.slice(0, i);
+    }
 
     // Parse arguments
     const argv = yargs
@@ -62,6 +87,16 @@ import {getApplicationNames, getServiceNames, executeAction} from './docker';
                 })
                 .positional('services', {
                     describe: 'Services to restart, restarts all if no services are specified',
+                    array: true
+                });
+        })
+        .command('update <application> [services..]', 'Update an application', () => {
+            yargs
+                .positional('application', {
+                    describe: 'Application to update or "all" to update all applications'
+                })
+                .positional('services', {
+                    describe: 'Services to update, updates all if no services are specified',
                     array: true
                 });
         })
@@ -113,12 +148,37 @@ import {getApplicationNames, getServiceNames, executeAction} from './docker';
                     describe: 'Show timestamps'
                 });
         })
+        .command('exec <application> <service> <command> [arguments..]', 'Execute a command in the container of a service', () => {
+            yargs
+                .positional('application', {
+                    describe: 'Application of the service'
+                })
+                .positional('service', {
+                    describe: 'Service of the container to execute the command in'
+                })
+                .positional('command', {
+                    describe: 'Command to execute'
+                })
+                .positional('arguments', {
+                    describe: 'Arguments for the command to execute',
+                    list: true
+                })
+                .option('user', {
+                    alias: 'u',
+                    describe: 'Username of UID (format: <name|uid>[:<group|gid>])'
+                })
+                .option('env', {
+                    alias: 'e',
+                    describe: 'Set environment variables',
+                    list: true
+                });
+        })
         .demandCommand()
         .recommendCommands()
         .strict()
         .help()
         .wrap(120)
-        .parse();
+        .parse(normalArguments);
 
     // Handle command aliases
     const aliases = {
@@ -227,6 +287,48 @@ import {getApplicationNames, getServiceNames, executeAction} from './docker';
 
             await executeAction(applications, args);
             break;
+        }
+        case 'exec': {
+            // Validate application name
+            if (applications.length > 1) {
+                console.error('Please provide a specific application name');
+                yargs.exit(1, null);
+            }
+
+            const application = applications[0];
+            const service = argv.service as string;
+
+            // Validate service name
+            const serviceNames = await getServiceNames(applications);
+            if (!serviceNames.includes(service)) {
+                console.error('Please provide a correct service name, choices:');
+                console.error(serviceNames.join(', '));
+                yargs.exit(1, null);
+            }
+
+            // Find Docker container ID
+            const containerId = await getContainerId(application, service);
+
+            // Construct Docker arguments
+            let args = ['exec', '-i', '-t'];
+            if (argv.user) {
+                args = args.concat(['-u', argv.user as string]);
+            }
+            if (argv.env) {
+                if (Array.isArray(argv.env)) {
+                    for (const arg of argv.env as string[]) {
+                        args = args.concat(['-e', arg]);
+                    }
+                } else {
+                    args = args.concat(['-e', argv.env as string]);
+                }
+            }
+            args = args
+                .concat([containerId, argv.command as string])
+                .concat(execArguments);
+
+            // Execute the specified command using Docker
+            await execute('docker', args, true);
         }
     }
 })();
