@@ -120,5 +120,5 @@ docker-manager logs -f hello-world hello-world-backend
 
 # Execute a command in the container of the backend service of the hello-world application
 docker-manager exec hello-world hello-world-backend ls -alh
-docker-manager exec hello-world hello-world-backend -e test=123 echo \$test
+docker-manager exec hello-world hello-world-backend -e test=123 sh -c "echo \$test"
 ```
