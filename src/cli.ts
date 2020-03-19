@@ -4,8 +4,6 @@ import {ensureDir} from 'fs-extra';
 import yargs from 'yargs';
 import {getProcessArgvWithoutBin} from 'yargs/lib/process-argv';
 
-import packageInfo from '../package.json';
-
 import config from './config';
 import {getApplicationNames, getServiceNames, execute, executeAction, getContainerId} from './docker';
 
@@ -52,7 +50,6 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
     const argv = yargs
         .scriptName('docker-manager')
         .choices('application', applicationNames.concat('all'))
-        .command('version', 'Displays version information')
         .command('list', 'Lists applications')
         .command('services <application>', 'List services of an application', () => {
             yargs
@@ -194,10 +191,6 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
 
     // Handle commands
     switch (command) {
-        case 'version': {
-            console.log(`Version: ${packageInfo.version}`);
-            break;
-        }
         case 'list': {
             console.log('Applications:');
             console.log(applicationNames.join(', '));
