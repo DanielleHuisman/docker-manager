@@ -1,3 +1,4 @@
+import {DefaultState} from 'koa';
 import {Context} from '@danielhuisman/koa-base';
 import Router from 'koa-router';
 
@@ -21,6 +22,39 @@ router.get('/applications', async (ctx) => {
         applicationNames,
         serviceNames
     });
+});
+
+const checkNames: Router.IMiddleware<DefaultState, Context> = async (ctx, next) => {
+    const {applicationName, serviceName} = ctx.params;
+
+    const applicationNames = await getApplicationNames();
+    if (applicationName !== 'all' && !applicationNames.includes(applicationName)) {
+        return ctx.error(404, `Application not found`);
+    }
+
+    const serviceNames = await getServiceNames([applicationName]);
+    if (serviceName !== 'all' && !serviceNames.includes(serviceName)) {
+        return ctx.error(404, `Service not found`);
+    }
+
+    await next();
+};
+
+router.get('/applications/:applicationName/:serviceName', checkNames, async (ctx) => {
+    const {applicationName, serviceName} = ctx.params;
+
+    return ctx.render('service', {
+        applicationName,
+        serviceName
+    });
+});
+
+router.post('/applications/:applicationName/:serviceName', checkNames, async (ctx) => {
+    const {applicationName, serviceName} = ctx.params;
+
+    console.log('action:', applicationName, serviceName, ctx.request.body);
+
+    return ctx.redirect(`/applications/${applicationName}/${serviceName}`);
 });
 
 export default router;

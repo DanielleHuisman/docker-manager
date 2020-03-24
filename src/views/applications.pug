@@ -1,11 +1,17 @@
 extends layout/base
 
-mixin actions(applicationName, serviceName)
-    a.btn.btn-sm.btn-outline-primary.mr-1(href=`/applications/${applicationName}/${serviceName}`) View
-    a.btn.btn-sm.btn-outline-primary.mx-1(href=`/applications/${applicationName}/${serviceName}/start`) Start
-    a.btn.btn-sm.btn-outline-primary.mx-1(href=`/applications/${applicationName}/${serviceName}/stop`) Stop
-    a.btn.btn-sm.btn-outline-primary.ml-1(href=`/applications/${applicationName}/${serviceName}/restart`) Restart
-    a.btn.btn-sm.btn-outline-primary.ml-1(href=`/applications/${applicationName}/${serviceName}/update`) Update
+mixin action(applicationName, serviceName, action, name)
+    form.d-inline(method='post' action=`/applications/${applicationName}/${serviceName}`)
+        input(type='hidden', name='action', value=action)
+        button.btn(type='submit')&attributes(attributes)= name
+
+mixin actions(applicationName, serviceName, isAll=false)
+    +action(applicationName, serviceName, 'start', 'Start')(class='btn-outline-success mr-1')
+    +action(applicationName, serviceName, 'stop', 'Stop')(class='btn-outline-danger mx-1')
+    +action(applicationName, serviceName, 'restart', 'Restart')(class='btn-outline-danger mx-1')
+    +action(applicationName, serviceName, 'update', 'Update')(class='btn-outline-primary ml-1')
+    if !isAll
+        a.btn.btn-outline-primary.mx-1(href=`/applications/${applicationName}/${serviceName}`) View
 
 block content
     table.table.table-hover
@@ -22,7 +28,7 @@ block content
                     td
                         i All
                     td
-                        +actions(applicationName, serviceName)
+                        +actions(applicationName, 'all', true)
                 each serviceName in serviceNames[applicationName]
                     tr
                         td= serviceName
