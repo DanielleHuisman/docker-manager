@@ -40,7 +40,7 @@ export const execute = (
     command: string,
     args: string[],
     forwardInput: boolean = false,
-    forwardOutput: boolean = false
+    forwardOutput: boolean = true
 ): Promise<void> => new Promise((resolve, reject) => {
     const p = spawn(command, args, {
         stdio: [
@@ -61,11 +61,45 @@ export const getFileArguments = (applicationNames: string[]) => ['common']
     .concat(applicationNames)
     .flatMap((applicationName) => ['-f', path.resolve(config.applications.path, `${applicationName}.yml`)]);
 
-export const executeAction = async (applicationNames: string[], action: string | string[], silent: boolean = false) => {
+export const executeAction = async (applicationNames: string[], action: string | string[], read: boolean = false) => {
     const args = getFileArguments(applicationNames).concat(Array.isArray(action) ? action : [action]);
 
-    await execute('docker-compose', args, false, silent);
+    if (read) {
+        return await readProcess('docker-composer', args);
+    } else {
+        await execute('docker-compose', args, false);
+    }
 };
+
+export const readProcess = (command: string, args?: string[], options?: SpawnOptions): Promise<string[]> =>
+    new Promise((fulfill, reject) => {
+        let lines = [];
+        const p = spawn(command, args, options);
+
+        p.stdout.on('data', (buffer) => {
+            const line = buffer.toString('utf8') as string;
+            lines = lines.concat(line.split('\n').map((s) => `[out] ${s}`));
+        });
+
+        p.stderr.on('data', (buffer) => {
+            const line = buffer.toString('utf8') as string;
+            lines = lines.concat(line.split('\n').map((s) => `[err] ${s}`));
+        });
+
+        let fulfilled = false;
+        const finish = () => {
+            if (!fulfilled) {
+                fulfilled = true;
+                fulfill(lines);
+            }
+        };
+        p.stdout.on('close', finish);
+        p.stderr.on('close', finish);
+        p.on('exit', finish);
+        p.on('error', (err) => {
+            return reject(err);
+        });
+    });
 
 export const spawnProcess = (command: string, args?: string[], options?: SpawnOptions, readError: boolean = false): Promise<string[]> =>
     new Promise((fulfill, reject) => {
