@@ -36,15 +36,19 @@ export const getServiceNames = async (applicationNames: string[]) => {
     return serviceNames;
 };
 
-export const execute = (command: string, args: string[], forwardInput: boolean = false): Promise<void> => new Promise((resolve, reject) => {
+export const execute = (
+    command: string,
+    args: string[],
+    forwardInput: boolean = false,
+    forwardOutput: boolean = false
+): Promise<void> => new Promise((resolve, reject) => {
     const p = spawn(command, args, {
-        stdio: [forwardInput ? process.stdin : null, process.stdout, process.stderr]
+        stdio: [
+            forwardInput ? process.stdin : null,
+            forwardOutput ? process.stdout : null,
+            forwardOutput ? process.stderr : null
+        ]
     });
-    // if (forwardInput) {
-    //     process.stdin.pipe(p.stdin);
-    // }
-    // p.stdout.pipe(process.stdout);
-    // p.stderr.pipe(process.stderr);
     p.on('exit', () => {
         resolve();
     });
@@ -57,10 +61,10 @@ export const getFileArguments = (applicationNames: string[]) => ['common']
     .concat(applicationNames)
     .flatMap((applicationName) => ['-f', path.resolve(config.applications.path, `${applicationName}.yml`)]);
 
-export const executeAction = async (applicationNames: string[], action: string | string[], forwardInput: boolean = false) => {
+export const executeAction = async (applicationNames: string[], action: string | string[], silent: boolean = false) => {
     const args = getFileArguments(applicationNames).concat(Array.isArray(action) ? action : [action]);
 
-    await execute('docker-compose', args, forwardInput);
+    await execute('docker-compose', args, false, silent);
 };
 
 export const spawnProcess = (command: string, args?: string[], options?: SpawnOptions, readError: boolean = false): Promise<string[]> =>

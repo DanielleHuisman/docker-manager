@@ -5,6 +5,7 @@ import yargs from 'yargs';
 import {getProcessArgvWithoutBin} from 'yargs/lib/process-argv';
 
 import config from './config';
+import {start, stop, restart, update} from './actions';
 import {getApplicationNames, getServiceNames, execute, executeAction, getContainerId} from './docker';
 
 (async () => {
@@ -210,49 +211,19 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
             break;
         }
         case 'start': {
-            let args = [];
-            if (argv.services) {
-                args = args.concat(argv.services as string[]);
-            }
-
-            await executeAction(applications, ['up', '-d'].concat(args));
+            await start(applications, argv.services as string[]);
             break;
         }
         case 'stop': {
-            let args = [];
-            if (argv.services) {
-                args = args.concat(argv.services as string[]);
-            }
-
-            if (argv.services) {
-                await executeAction(applications, ['rm', '-s', '-f'].concat(args));
-            } else {
-                await executeAction(applications, ['down'].concat(args));
-            }
+            await stop(applications, argv.serivces as string[]);
             break;
         }
         case 'restart': {
-            let args = [];
-            if (argv.services) {
-                args = args.concat(argv.services as string[]);
-            }
-
-            if (argv.services) {
-                await executeAction(applications, ['rm', '-s', '-f'].concat(args));
-            } else {
-                await executeAction(applications, ['down'].concat(args));
-            }
-            await executeAction(applications, ['up', '-d'].concat(args));
+            await restart(applications, argv.services as string[]);
             break;
         }
         case 'update': {
-            let args = [];
-            if (argv.services) {
-                args = args.concat(argv.services as string[]);
-            }
-
-            await executeAction(applications, ['pull'].concat(args));
-            await executeAction(applications, ['up', '-d'].concat(args));
+            await update(applications, argv.services as string[]);
             break;
         }
         case 'ps':

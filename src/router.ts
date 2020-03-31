@@ -2,12 +2,15 @@ import {DefaultState} from 'koa';
 import {Context} from '@danielhuisman/koa-base';
 import Router from 'koa-router';
 
+import * as actions from './actions';
 import {getApplicationNames, getServiceNames} from './docker';
 
 const router = new Router<any, Context>();
 
 router.get('/', async (ctx) => {
-    return ctx.render('index');
+    // TODO: render sign in screen
+
+    return ctx.redirect('/applications');
 });
 
 router.get('/applications', async (ctx) => {
@@ -51,9 +54,17 @@ router.get('/applications/:applicationName/:serviceName', checkNames, async (ctx
 
 router.post('/applications/:applicationName/:serviceName', checkNames, async (ctx) => {
     const {applicationName, serviceName} = ctx.params;
+    const body = ctx.request.body;
 
-    console.log('action:', applicationName, serviceName, ctx.request.body);
+    // Validate action
+    if (!body.action || !actions[body.action]) {
+        return ctx.error(400, `Unknown action "${body.action}"`);
+    }
 
+    // Execute action
+    await actions[body.action]([applicationName], serviceName === 'all' ? undefined : [serviceName]);
+
+    // Return to service page
     return ctx.redirect(`/applications/${applicationName}/${serviceName}`);
 });
 
