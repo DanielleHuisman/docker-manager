@@ -2,7 +2,8 @@
 
 import {ensureDir} from 'fs-extra';
 import yargs from 'yargs';
-import {getProcessArgvWithoutBin} from 'yargs/lib/process-argv';
+// @ts-ignore: yargs types are outdated
+import {hideBin} from 'yargs/helpers';
 
 import config from './config';
 import {start, stop, restart, update} from './actions';
@@ -24,7 +25,7 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
     const applicationNames = await getApplicationNames();
 
     // Hack to pass remaining arguments to exec command
-    let normalArguments: string[] = getProcessArgvWithoutBin();
+    let normalArguments: string[] = hideBin(process.argv);
     let execArguments = [];
     if (normalArguments.length > 0 && normalArguments[0].toLowerCase() === 'exec') {
         let requiredArgs = 0;
