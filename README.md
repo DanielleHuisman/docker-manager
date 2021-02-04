@@ -1,10 +1,20 @@
 # docker-manager
 
-Simple management tool for Docker containers.
+Simple management tool for Docker containers on Linux.
 
 ## Installation
+Install Docker Manager as global dependency:
 ```bash
+# Yarn
 yarn global add docker-manager
+
+# npm
+npm install -g docker-manager
+```
+
+Install the systemd service to enable auto start after boot:
+```bash
+sudo docker-manager systemd
 ```
 
 ## Terminology
@@ -43,6 +53,7 @@ Docker Manager CLI
 docker-manager <command>
 
 Commands:
+  docker-manager install                                        Install systemd service
   docker-manager version                                        Displays version information
   docker-manager list                                           Lists applications
   docker-manager services <application>                         List services of an application

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import {ensureDir} from 'fs-extra';
+import path from 'path';
+import {copy, ensureDir} from 'fs-extra';
 import yargs from 'yargs';
-// @ts-ignore: yargs types are outdated
 import {hideBin} from 'yargs/helpers';
 
 import config from './config';
@@ -52,6 +52,7 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
     const argv = yargs
         .scriptName('docker-manager')
         .choices('application', applicationNames.concat('all'))
+        .command('install', 'Install systemd service')
         .command('list', 'Lists applications')
         .command('services <application>', 'List services of an application', () => {
             yargs
@@ -193,6 +194,15 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
 
     // Handle commands
     switch (command) {
+        case 'install': {
+            await copy(path.join(__dirname, '..', 'systemd', 'docker-manager.service'), '/etc/systemd/system/docker-manager.service');
+            console.log('Installed docker-manager service to /etc/systemd/system/docker-manager.service');
+            await execute('systemctl', ['enable', 'docker-manager']);
+            console.log('Enabled docker-manager service');
+            await execute('systemctl', ['start', 'docker-manager']);
+            console.log('Started docker-manager service');
+            break;
+        }
         case 'list': {
             console.log('Applications:');
             console.log(applicationNames.join(', '));

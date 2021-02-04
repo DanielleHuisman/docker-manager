@@ -1,0 +1,15 @@
+[Unit]
+Description=Docker Manager
+After=docker.service network-online.target
+Requires=docker.service network-online.target
+
+[Service]
+WorkingDirectory=/srv/docker
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/docker-manager start all
+ExecStop=/usr/local/bin/docker-manager stop all
+ExecReload=/usr/local/bin/docker-manager restart all
+
+[Install]
+WantedBy=multi-user.target
