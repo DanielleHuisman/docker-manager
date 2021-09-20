@@ -49,7 +49,7 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
     }
 
     // Parse arguments
-    const argv = yargs
+    const argv = await yargs
         .scriptName('docker-manager')
         .choices('application', applicationNames.concat('all'))
         .command('install', 'Install systemd service')
@@ -143,8 +143,18 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
                     alias: 'f',
                     describe: 'Follow log output'
                 })
+                .option('color', {
+                    describe: 'Produce colored output',
+                    default: true,
+                    hidden: true
+                })
                 .option('no-color', {
-                    describe: 'Produce monochrome output'    
+                    describe: 'Produce monochrome output'
+                })
+                .option('log-prefix', {
+                    describe: 'Print prefix in logs',
+                    default: true,
+                    hidden: true
                 })
                 .option('no-log-prefix', {
                     describe: 'Don\'t print prefix in logs'
@@ -263,15 +273,15 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
             if (argv.follow) {
                 args.push('-f');
             }
-            if (argv['no-color']) {
-                args.push('--no-color');   
+            if (!argv.color) {
+                args.push('--no-color');
             }
-            if (argv['no-log-prefix']) {
-                args.push('--no-log-prefix');   
+            if (!argv['log-prefix']) {
+                args.push('--no-log-prefix');
             }
-            if (argv.tail !== undefined && !isNaN(argv.tail)) {
+            if (argv.tail !== undefined && !isNaN(argv.tail as number)) {
                 args.push('--tail');
-                args.psuh(argv.tail);
+                args.push(argv.tail.toString());
             }
             if (argv.timestamps) {
                 args.push('-t');
