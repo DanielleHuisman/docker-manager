@@ -143,6 +143,16 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
                     alias: 'f',
                     describe: 'Follow log output'
                 })
+                .option('no-color', {
+                    describe: 'Produce monochrome output'    
+                })
+                .option('no-log-prefix', {
+                    describe: 'Don\'t print prefix in logs'
+                })
+                .option('tail', {
+                    describe: 'Number of lines to show from the end of the logs for each container',
+                    number: true
+                })
                 .option('timestamps', {
                     alias: 't',
                     describe: 'Show timestamps'
@@ -252,6 +262,16 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
             let args = ['logs'];
             if (argv.follow) {
                 args.push('-f');
+            }
+            if (argv['no-color']) {
+                args.push('--no-color');   
+            }
+            if (argv['no-log-prefix']) {
+                args.push('--no-log-prefix');   
+            }
+            if (argv.tail !== undefined && !isNaN(argv.tail)) {
+                args.push('--tail');
+                args.psuh(argv.tail);
             }
             if (argv.timestamps) {
                 args.push('-t');
