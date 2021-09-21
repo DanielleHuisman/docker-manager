@@ -1,10 +1,11 @@
 import path from 'path';
+
 import {createServer} from '@danielhuisman/koa-base';
-import KoaPug from 'koa-pug';
+import {KoaPug} from 'koa-pug';
 import moment from 'moment';
 
-import config from './config';
-import router from './router';
+import {config} from './config';
+import {router} from './router';
 
 const {server, app} = createServer(config);
 
@@ -15,6 +16,7 @@ const pug = new KoaPug({
         moment
     }
 });
+// @ts-expect-error: KoaPug's Koa has no State or Context type parameters
 pug.use(app);
 
 // Add dynamic Pug locals

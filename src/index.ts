@@ -1,6 +1,6 @@
 import {startServer, logger} from '@danielhuisman/koa-base';
 
-import config from './config';
+import {config} from './config';
 import {server} from './server';
 
 (async () => {

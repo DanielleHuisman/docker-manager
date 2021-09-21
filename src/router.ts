@@ -2,10 +2,10 @@ import {DefaultState} from 'koa';
 import {Context} from '@danielhuisman/koa-base';
 import Router from 'koa-router';
 
-import * as actions from './actions';
+import {actions} from './actions';
 import {getApplicationNames, getServiceNames} from './docker';
 
-const router = new Router<any, Context>();
+export const router = new Router<unknown, Context>();
 
 router.get('/', async (ctx) => {
     // TODO: render sign in screen
@@ -67,5 +67,3 @@ router.post('/applications/:applicationName/:serviceName', checkNames, async (ct
     // Return to service page
     return ctx.redirect(`/applications/${applicationName}/${serviceName}`);
 });
-
-export default router;

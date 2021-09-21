@@ -1,7 +1,7 @@
 import {executeAction} from './docker';
 
 export const start = async (applications: string[], services?: string[], read: boolean = false) => {
-    let args = [];
+    let args: string[] = [];
     if (services) {
         args = args.concat(services);
     }
@@ -10,7 +10,7 @@ export const start = async (applications: string[], services?: string[], read: b
 };
 
 export const stop = async (applications: string[], services?: string[], read: boolean = false) => {
-    let args = [];
+    let args: string[] = [];
     if (services) {
         args = args.concat(services);
     }
@@ -23,7 +23,7 @@ export const stop = async (applications: string[], services?: string[], read: bo
 };
 
 export const restart = async (applications: string[], services?: string[], read: boolean = false) => {
-    let args = [];
+    let args: string[] = [];
     if (services) {
         args = args.concat(services);
     }
@@ -37,11 +37,18 @@ export const restart = async (applications: string[], services?: string[], read:
 };
 
 export const update = async (applications: string[], services?: string[], read: boolean = false) => {
-    let args = [];
+    let args: string[] = [];
     if (services) {
         args = args.concat(services);
     }
 
     await executeAction(applications, ['pull'].concat(args), read);
     await executeAction(applications, ['up', '-d'].concat(args), read);
+};
+
+export const actions = {
+    start,
+    stop,
+    restart,
+    update
 };

@@ -1,15 +1,15 @@
 import {spawn, SpawnOptions} from 'child_process';
 import {Dirent} from 'fs';
-import {readdir, readFile} from 'fs-extra';
 import path from 'path';
+
+import {readdir, readFile} from 'fs-extra';
 import yaml from 'yaml';
 
-import config from './config';
+import {config} from './config';
 
 export const getApplicationNames = async () => {
     // Read application directory
     const result = await readdir(config.applications.path, {
-        // @ts-ignore
         withFileTypes: true
     }) as Dirent[];
 
@@ -23,7 +23,7 @@ export const getApplicationNames = async () => {
 };
 
 export const getServiceNames = async (applicationNames: string[]) => {
-    let serviceNames = [];
+    let serviceNames: string[] = [];
 
     for (const applicationName of applicationNames) {
         const data = yaml.parse(await readFile(path.resolve(config.applications.path, `${applicationName}.yml`), 'utf8'));
@@ -67,21 +67,21 @@ export const executeAction = async (applicationNames: string[], action: string |
     if (read) {
         return await readProcess('docker-composer', args);
     } else {
-        await execute('docker-compose', args, false);
+        return await execute('docker-compose', args, false);
     }
 };
 
-export const readProcess = (command: string, args?: string[], options?: SpawnOptions): Promise<string[]> =>
+export const readProcess = (command: string, args: string[] = [], options: SpawnOptions = {}): Promise<string[]> =>
     new Promise((fulfill, reject) => {
-        let lines = [];
+        let lines: string[] = [];
         const p = spawn(command, args, options);
 
-        p.stdout.on('data', (buffer) => {
+        p.stdout?.on('data', (buffer) => {
             const line = buffer.toString('utf8') as string;
             lines = lines.concat(line.split('\n').map((s) => `[out] ${s}`));
         });
 
-        p.stderr.on('data', (buffer) => {
+        p.stderr?.on('data', (buffer) => {
             const line = buffer.toString('utf8') as string;
             lines = lines.concat(line.split('\n').map((s) => `[err] ${s}`));
         });
@@ -93,22 +93,22 @@ export const readProcess = (command: string, args?: string[], options?: SpawnOpt
                 fulfill(lines);
             }
         };
-        p.stdout.on('close', finish);
-        p.stderr.on('close', finish);
+        p.stdout?.on('close', finish);
+        p.stderr?.on('close', finish);
         p.on('exit', finish);
         p.on('error', (err) => {
             return reject(err);
         });
     });
 
-export const spawnProcess = (command: string, args?: string[], options?: SpawnOptions, readError: boolean = false): Promise<string[]> =>
+export const spawnProcess = (command: string, args: string[] = [], options: SpawnOptions = {}, readError: boolean = false): Promise<string[]> =>
     new Promise((fulfill, reject) => {
         let lines = [];
         const p = spawn(command, args, options);
 
         const socket = readError ? p.stderr : p.stdout;
 
-        socket.on('data', (buffer) => {
+        socket?.on('data', (buffer) => {
             const line = buffer.toString('utf8');
             lines = lines.concat(line.split('\n'));
         });
@@ -120,7 +120,7 @@ export const spawnProcess = (command: string, args?: string[], options?: SpawnOp
                 fulfill(lines);
             }
         };
-        socket.on('close', finish);
+        socket?.on('close', finish);
         p.on('exit', finish);
         p.on('error', (err) => {
             return reject(err);

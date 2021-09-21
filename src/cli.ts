@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
 import path from 'path';
+
 import {copy, ensureDir} from 'fs-extra';
 import yargs from 'yargs';
 import {hideBin} from 'yargs/helpers';
 
-import config from './config';
+import {config} from './config';
 import {start, stop, restart, update} from './actions';
 import {getApplicationNames, getServiceNames, execute, executeAction, getContainerId} from './docker';
 
@@ -18,7 +19,7 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
         await ensureDir(config.applications.path);
     } catch (err) {
         console.error(`The application directory (${config.applications.path}) does not exist and could not be created.`);
-        yargs.exit(1, err);
+        yargs.exit(1, err as Error);
     }
 
     // Find applications
@@ -26,7 +27,7 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
 
     // Hack to pass remaining arguments to exec command
     let normalArguments: string[] = hideBin(process.argv);
-    let execArguments = [];
+    let execArguments: string[] = [];
     if (normalArguments.length > 0 && normalArguments[0].toLowerCase() === 'exec') {
         let requiredArgs = 0;
         let i = 1;
@@ -202,7 +203,7 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
 
     // Handle command aliases
     const aliases = {
-        'status': 'ps'
+        status: 'ps'
     };
     let command = argv._[0];
     if (aliases[command]) {
@@ -210,7 +211,7 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
     }
 
     // Handle special arguments
-    const applications = argv.application === 'all' ? applicationNames : [argv.application];
+    const applications = argv.application === 'all' ? applicationNames : [argv.application as string];
 
     // Handle commands
     switch (command) {
@@ -281,7 +282,7 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
             }
             if (argv.tail !== undefined && !isNaN(argv.tail as number)) {
                 args.push('--tail');
-                args.push(argv.tail.toString());
+                args.push((argv.tail as number).toString());
             }
             if (argv.timestamps) {
                 args.push('-t');
@@ -296,8 +297,9 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
         case 'exec': {
             // Validate application name
             if (applications.length > 1) {
-                console.error('Please provide a specific application name');
-                yargs.exit(1, null);
+                const message = 'Please provide a specific application name';
+                console.error(message);
+                yargs.exit(1, new Error(message));
             }
 
             const application = applications[0];
@@ -306,9 +308,9 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
             // Validate service name
             const serviceNames = await getServiceNames(applications);
             if (!serviceNames.includes(service)) {
-                console.error('Please provide a correct service name, choices:');
-                console.error(serviceNames.join(', '));
-                yargs.exit(1, null);
+                const message = `Please provide a correct service name, choices:\n${serviceNames.join(', ')}`;
+                console.error(message);
+                yargs.exit(1, new Error(message));
             }
 
             // Find Docker container ID
