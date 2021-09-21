@@ -40,21 +40,44 @@ export const execute = (
     command: string,
     args: string[],
     forwardInput: boolean = false,
-    forwardOutput: boolean = true
+    forwardOutput: boolean = true,
+    filterOutput: boolean = true
 ): Promise<void> => new Promise((resolve, reject) => {
-    const p = spawn(command, args, {
-        stdio: [
-            forwardInput ? process.stdin : null,
-            forwardOutput ? process.stdout : null,
-            forwardOutput ? process.stderr : null
-        ]
-    });
-    p.on('exit', () => {
-        resolve();
-    });
-    p.on('error', (err) => {
-        reject(err);
-    });
+    try {
+        const p = spawn(command, args, {
+            stdio: [
+                forwardInput ? process.stdin : 'ignore',
+                forwardOutput ? (filterOutput ? 'pipe' : process.stdout) : 'ignore',
+                forwardOutput ? (filterOutput ? 'pipe' : process.stdout) : 'ignore'
+            ]
+        });
+
+        if (filterOutput) {
+            p.stdout?.setEncoding('utf-8');
+            p.stdout?.on('data', (data: string) => {
+                const line = data.substring(0, data.length - 1);
+                if (!line.includes('Found orphan containers')) {
+                    console.log(line);
+                }
+            });
+            p.stderr?.setEncoding('utf-8');
+            p.stderr?.on('data', (data: string) => {
+                const line = data.substring(0, data.length - 1);
+                if (!line.includes('Found orphan containers')) {
+                    console.error(line);
+                }
+            });
+        }
+
+        p.on('exit', () => {
+            resolve();
+        });
+        p.on('error', (err) => {
+            reject(err);
+        });
+    } catch (err) {
+        console.error(err);
+    }
 });
 
 export const getFileArguments = (applicationNames: string[]) => ['common']

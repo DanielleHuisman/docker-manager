@@ -383,7 +383,7 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
                 .concat(execArguments);
 
             // Execute the specified command using Docker
-            await execute('docker', args, true);
+            await execute('docker', args, true, true, false);
         }
     }
 })();
