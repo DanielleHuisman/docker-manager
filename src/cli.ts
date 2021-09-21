@@ -212,7 +212,8 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
     }
 
     // Handle special arguments
-    const applications = argv.application === 'all' ? applicationNames : [argv.application as string];
+    const isAll = argv.application === 'all';
+    const applications = isAll ? applicationNames : [argv.application as string];
 
     // Handle commands
     switch (command) {
@@ -289,14 +290,14 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
             const services = argv.services as string[];
             const serviceNames = await getServiceNames(applications);
 
-            await stop(applications, services.length === 0 ? serviceNames : services);
+            await stop(applications, services.length === 0 && !isAll ? serviceNames : services);
             break;
         }
         case 'restart': {
             const services = argv.services as string[];
             const serviceNames = await getServiceNames(applications);
 
-            await restart(applications, services.length === 0 ? serviceNames : services);
+            await restart(applications, services.length === 0 && !isAll ? serviceNames : services);
             break;
         }
         case 'update': {
