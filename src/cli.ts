@@ -286,11 +286,17 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
             break;
         }
         case 'stop': {
-            await stop(applications, argv.serivces as string[]);
+            const services = argv.services as string[];
+            const serviceNames = await getServiceNames(applications);
+
+            await stop(applications, services.length === 0 ? serviceNames : services);
             break;
         }
         case 'restart': {
-            await restart(applications, argv.services as string[]);
+            const services = argv.services as string[];
+            const serviceNames = await getServiceNames(applications);
+
+            await restart(applications, services.length === 0 ? serviceNames : services);
             break;
         }
         case 'update': {
