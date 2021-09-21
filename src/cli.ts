@@ -2,7 +2,7 @@
 
 import path from 'path';
 
-import {copy, ensureDir} from 'fs-extra';
+import {copy, ensureDir, pathExists} from 'fs-extra';
 import yargs from 'yargs';
 import {hideBin} from 'yargs/helpers';
 
@@ -216,7 +216,28 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
     // Handle commands
     switch (command) {
         case 'install': {
+            const paths = [
+                '/usr/bin/docker-manger',
+                '/usr/local/bin/docker-manager'
+            ];
+
+            // Find location of docker-manager
+            let location: string | null = null;
+            for (const p of paths) {
+                if (await pathExists(p)) {
+                    location = p;
+                    break;
+                }
+            }
+            if (!location) {
+                const message = 'Unable to locate docker-manager location, should be in /usr/bin or /usr/local/bin.';
+                console.error(message);
+                yargs.exit(1, new Error(message));
+            }
+
+            // Copy systemd service file, enable it and start it
             await copy(path.join(__dirname, '..', 'systemd', 'docker-manager.service'), '/etc/systemd/system/docker-manager.service');
+            await execute('sed', ['-i', `s|/usr/local/bin/docker-manager|${location}|`, '/etc/systemd/system/docker-manager.service']);
             console.log('Installed docker-manager service to /etc/systemd/system/docker-manager.service');
             await execute('systemctl', ['enable', 'docker-manager']);
             console.log('Enabled docker-manager service');
