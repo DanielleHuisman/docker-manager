@@ -17,6 +17,11 @@ Install the systemd service to enable auto start after boot:
 sudo docker-manager install
 ```
 
+If you wish to uninstall the systemd service, run:
+```bash
+sudo docker-manager uninstall
+```
+
 ## Terminology
 ### Application
 Applications are a collection of services that you would like to run. For example, a typical web application has two services, namely a backend and a frontend.

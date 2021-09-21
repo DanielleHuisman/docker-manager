@@ -2,7 +2,7 @@
 
 import path from 'path';
 
-import {copy, ensureDir, pathExists} from 'fs-extra';
+import {copy, ensureDir, pathExists, remove} from 'fs-extra';
 import yargs from 'yargs';
 import {hideBin} from 'yargs/helpers';
 
@@ -54,6 +54,7 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
         .scriptName('docker-manager')
         .choices('application', applicationNames.concat('all'))
         .command('install', 'Install systemd service')
+        .command('uninstall', 'Uninstall systemd service')
         .command('list', 'Lists applications')
         .command('services <application>', 'List services of an application', () => {
             yargs
@@ -233,6 +234,7 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
                 const message = 'Unable to locate docker-manager location, should be in /usr/bin or /usr/local/bin.';
                 console.error(message);
                 yargs.exit(1, new Error(message));
+                return;
             }
 
             // Copy systemd service file, enable it and start it
@@ -243,6 +245,22 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
             console.log('Enabled docker-manager service');
             await execute('systemctl', ['start', 'docker-manager']);
             console.log('Started docker-manager service');
+            break;
+        }
+        case 'uninstall': {
+            if (!await pathExists('/etc/systemd/system/docker-manager.service')) {
+                const message = 'No systemd service is installed for docker-manager.';
+                console.error(message);
+                yargs.exit(1, new Error(message));
+                return;
+            }
+
+            await execute('systemctl', ['stop', 'docker-manager']);
+            console.log('Stopped docker-manager service');
+            await execute('systemctl', ['disable', 'docker-manager']);
+            console.log('Disabled docker-manager service');
+            await remove('/etc/systemd/system/docker-manager.service');
+            console.log('Unstalled docker-manager service from /etc/systemd/system/docker-manager.service');
             break;
         }
         case 'list': {
@@ -321,6 +339,7 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
                 const message = 'Please provide a specific application name';
                 console.error(message);
                 yargs.exit(1, new Error(message));
+                return;
             }
 
             const application = applications[0];
@@ -332,6 +351,7 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
                 const message = `Please provide a correct service name, choices:\n${serviceNames.join(', ')}`;
                 console.error(message);
                 yargs.exit(1, new Error(message));
+                return;
             }
 
             // Find Docker container ID
