@@ -82,13 +82,13 @@ export const getFileArguments = (applicationNames: string[]) => ['common']
     .concat(applicationNames)
     .flatMap((applicationName) => ['-f', path.resolve(config.applications.path, `${applicationName}.yml`)]);
 
-export const executeAction = async (applicationNames: string[], action: string | string[], read: boolean = false) => {
+export const executeAction = async (applicationNames: string[], action: string | string[], read: boolean = false, filterOutput = false) => {
     const args = getFileArguments(applicationNames).concat(Array.isArray(action) ? action : [action]);
 
     if (read) {
         return await readProcess('docker-composer', args);
     } else {
-        return await execute('docker-compose', args, false);
+        return await execute('docker-compose', args, false, true, filterOutput);
     }
 };
 
