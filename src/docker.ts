@@ -55,16 +55,14 @@ export const execute = (
         if (filterOutput) {
             p.stdout?.setEncoding('utf-8');
             p.stdout?.on('data', (data: string) => {
-                const line = data.charAt(data.length - 1) === '\n' ? data.substring(0, data.length - 1) : data;
-                if (!line.includes('Found orphan containers')) {
-                    console.log(line);
+                if (!data.includes('Found orphan containers')) {
+                    process.stdout.write(data);
                 }
             });
             p.stderr?.setEncoding('utf-8');
             p.stderr?.on('data', (data: string) => {
-                const line = data.chatAt(data.length - 1) === '\n' ? data.substring(0, data.length - 1) : data;
-                if (!line.includes('Found orphan containers')) {
-                    console.error(line);
+                if (!data.includes('Found orphan containers')) {
+                    process.stderr.write(data);
                 }
             });
         }
