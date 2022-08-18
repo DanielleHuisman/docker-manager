@@ -83,12 +83,12 @@ export const getFileArguments = (applicationNames: string[]) => ['common']
     .flatMap((applicationName) => ['-f', path.resolve(config.applications.path, `${applicationName}.yml`)]);
 
 export const executeAction = async (applicationNames: string[], action: string | string[], read: boolean = false, filterOutput = false) => {
-    const args = getFileArguments(applicationNames).concat(Array.isArray(action) ? action : [action]);
+    const args = ['compose'].concat(getFileArguments(applicationNames).concat(Array.isArray(action) ? action : [action]));
 
     if (read) {
-        return await readProcess('docker-composer', args);
+        return await readProcess('docker', args);
     } else {
-        return await execute('docker-compose', args, false, true, filterOutput);
+        return await execute('docker', args, false, true, filterOutput);
     }
 };
 
@@ -149,9 +149,9 @@ export const spawnProcess = (command: string, args: string[] = [], options: Spaw
     });
 
 export const getContainerId = async (applicationName: string, serviceName: string) => {
-    const args = getFileArguments([applicationName]).concat(['ps', '-q', serviceName]);
+    const args = ['compose'].concat(getFileArguments([applicationName]).concat(['ps', '-q', serviceName]));
 
-    const output = await spawnProcess('docker-compose', args);
+    const output = await spawnProcess('docker', args);
 
     return output[0];
 };
