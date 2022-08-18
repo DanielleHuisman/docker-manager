@@ -1,7 +1,7 @@
 import path from 'path';
 
 import {createServer} from '@danielhuisman/koa-base';
-import {KoaPug} from 'koa-pug';
+import KoaPug from 'koa-pug';
 import moment from 'moment';
 
 import {config} from './config';
