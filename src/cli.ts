@@ -219,7 +219,7 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
     switch (command) {
         case 'install': {
             const paths = [
-                '/usr/bin/docker-manger',
+                '/usr/bin/docker-manager',
                 '/usr/local/bin/docker-manager'
             ];
 
