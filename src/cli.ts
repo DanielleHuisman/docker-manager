@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import path from 'path';
 
 import {copy, ensureDir, pathExists, remove} from 'fs-extra';

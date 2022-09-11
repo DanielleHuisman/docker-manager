@@ -27,8 +27,9 @@
     "scripts": {
         "lint": "eslint src",
         "clean": "rimraf dist",
-        "build": "yarn run clean && yarn run build:ts && yarn run build:views",
+        "build": "yarn run clean && yarn run build:ts && yarn run build:shebang && yarn run build:views",
         "build:ts": "tsc",
+        "build:shebang": "echo \"#!/usr/bin/env node\n\n$(cat dist/cli.js)\" > dist/cli.js",
         "build:views": "mkdir -p dist/views && cp -r src/views dist",
         "prepublish": "yarn run build",
         "start": "dotenv -- node dist/index.js",
