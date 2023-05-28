@@ -54,7 +54,7 @@ router.get('/applications/:applicationName/:serviceName', checkNames, async (ctx
 
 router.post('/applications/:applicationName/:serviceName', checkNames, async (ctx) => {
     const {applicationName, serviceName} = ctx.params;
-    const body = ctx.request.body;
+    const body = ctx.request.body as Record<string, string>;
 
     // Validate action
     if (!body.action || !actions[body.action]) {

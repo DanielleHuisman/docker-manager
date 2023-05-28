@@ -16,7 +16,6 @@ const pug = new KoaPug({
         moment
     }
 });
-// @ts-expect-error: KoaPug's Koa has no State or Context type parameters
 pug.use(app);
 
 // Add dynamic Pug locals
