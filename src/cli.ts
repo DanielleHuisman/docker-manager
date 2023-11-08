@@ -1,13 +1,13 @@
-import path from 'path';
-
 import {copy, ensureDir, pathExists, remove} from 'fs-extra';
+import path from 'path';
 import yargs from 'yargs';
 import {hideBin} from 'yargs/helpers';
 
+import {restart, start, stop, update} from './actions';
 import {config} from './config';
-import {start, stop, restart, update} from './actions';
-import {getApplicationNames, getServiceNames, execute, executeAction, getContainerId} from './docker';
+import {execute, executeAction, getApplicationNames, getContainerId, getServiceNames} from './docker';
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 (async () => {
     console.log('Docker Manager CLI');
     console.log();
@@ -16,7 +16,9 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
     try {
         await ensureDir(config.applications.path);
     } catch (err) {
-        console.error(`The application directory (${config.applications.path}) does not exist and could not be created.`);
+        console.error(
+            `The application directory (${config.applications.path}) does not exist and could not be created.`
+        );
         yargs.exit(1, err as Error);
     }
 
@@ -55,10 +57,9 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
         .command('uninstall', 'Uninstall systemd service')
         .command('list', 'Lists applications')
         .command('services <application>', 'List services of an application', () => {
-            yargs
-                .positional('application', {
-                    describe: 'Application to list services for'
-                });
+            yargs.positional('application', {
+                describe: 'Application to list services for'
+            });
         })
         .command('start <application> [services..]', 'Start an application', () => {
             yargs
@@ -100,16 +101,20 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
                     array: true
                 });
         })
-        .command(['status <application> [services..]', 'ps <application> [services..]'], 'Display status of an application', () => {
-            yargs
-                .positional('application', {
-                    describe: 'Application to display status for'
-                })
-                .positional('services', {
-                    describe: 'Services to display status for, displays all if no services are specified',
-                    array: true
-                });
-        })
+        .command(
+            ['status <application> [services..]', 'ps <application> [services..]'],
+            'Display status of an application',
+            () => {
+                yargs
+                    .positional('application', {
+                        describe: 'Application to display status for'
+                    })
+                    .positional('services', {
+                        describe: 'Services to display status for, displays all if no services are specified',
+                        array: true
+                    });
+            }
+        )
         .command('top <application> [services..]', 'Display running processes of an application', () => {
             yargs
                 .positional('application', {
@@ -157,7 +162,7 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
                     hidden: true
                 })
                 .option('no-log-prefix', {
-                    describe: 'Don\'t print prefix in logs'
+                    describe: "Don't print prefix in logs"
                 })
                 .option('tail', {
                     describe: 'Number of lines to show from the end of the logs for each container',
@@ -168,31 +173,35 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
                     describe: 'Show timestamps'
                 });
         })
-        .command('exec <application> <service> <command> [arguments..]', 'Execute a command in the container of a service', () => {
-            yargs
-                .positional('application', {
-                    describe: 'Application of the service'
-                })
-                .positional('service', {
-                    describe: 'Service of the container to execute the command in'
-                })
-                .positional('command', {
-                    describe: 'Command to execute'
-                })
-                .positional('arguments', {
-                    describe: 'Arguments for the command to execute',
-                    list: true
-                })
-                .option('user', {
-                    alias: 'u',
-                    describe: 'Username of UID (format: <name|uid>[:<group|gid>])'
-                })
-                .option('env', {
-                    alias: 'e',
-                    describe: 'Set environment variables',
-                    list: true
-                });
-        })
+        .command(
+            'exec <application> <service> <command> [arguments..]',
+            'Execute a command in the container of a service',
+            () => {
+                yargs
+                    .positional('application', {
+                        describe: 'Application of the service'
+                    })
+                    .positional('service', {
+                        describe: 'Service of the container to execute the command in'
+                    })
+                    .positional('command', {
+                        describe: 'Command to execute'
+                    })
+                    .positional('arguments', {
+                        describe: 'Arguments for the command to execute',
+                        list: true
+                    })
+                    .option('user', {
+                        alias: 'u',
+                        describe: 'Username of UID (format: <name|uid>[:<group|gid>])'
+                    })
+                    .option('env', {
+                        alias: 'e',
+                        describe: 'Set environment variables',
+                        list: true
+                    });
+            }
+        )
         .demandCommand()
         .recommendCommands()
         .strict()
@@ -206,7 +215,7 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
     };
     let command = argv._[0];
     if (aliases[command]) {
-        command = aliases[command];
+        command = aliases[command] as string;
     }
 
     // Handle special arguments
@@ -216,10 +225,7 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
     // Handle commands
     switch (command) {
         case 'install': {
-            const paths = [
-                '/usr/bin/docker-manager',
-                '/usr/local/bin/docker-manager'
-            ];
+            const paths = ['/usr/bin/docker-manager', '/usr/local/bin/docker-manager'];
 
             // Find location of docker-manager
             let location: string | null = null;
@@ -237,8 +243,15 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
             }
 
             // Copy systemd service file, enable it and start it
-            await copy(path.join(__dirname, '..', 'systemd', 'docker-manager.service'), '/etc/systemd/system/docker-manager.service');
-            await execute('sed', ['-i', `s|/usr/local/bin/docker-manager|${location}|`, '/etc/systemd/system/docker-manager.service']);
+            await copy(
+                path.join(__dirname, '..', 'systemd', 'docker-manager.service'),
+                '/etc/systemd/system/docker-manager.service'
+            );
+            await execute('sed', [
+                '-i',
+                `s|/usr/local/bin/docker-manager|${location}|`,
+                '/etc/systemd/system/docker-manager.service'
+            ]);
             console.log('Installed docker-manager service to /etc/systemd/system/docker-manager.service');
             await execute('systemctl', ['enable', 'docker-manager']);
             console.log('Enabled docker-manager service');
@@ -247,7 +260,7 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
             break;
         }
         case 'uninstall': {
-            if (!await pathExists('/etc/systemd/system/docker-manager.service')) {
+            if (!(await pathExists('/etc/systemd/system/docker-manager.service'))) {
                 const message = 'No systemd service is installed for docker-manager.';
                 console.error(message);
                 yargs.exit(1, new Error(message));
@@ -376,9 +389,7 @@ import {getApplicationNames, getServiceNames, execute, executeAction, getContain
                     args = args.concat(['-e', argv.env as string]);
                 }
             }
-            args = args
-                .concat([containerId, argv.command as string])
-                .concat(execArguments);
+            args = args.concat([containerId, argv.command as string]).concat(execArguments);
 
             // Execute the specified command using Docker
             await execute('docker', args, true, true, false);

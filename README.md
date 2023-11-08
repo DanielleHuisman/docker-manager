@@ -3,7 +3,9 @@
 Simple management tool for Docker containers on Linux.
 
 ## Installation
+
 Install Docker Manager as global dependency:
+
 ```bash
 # Yarn
 sudo yarn global add docker-manager
@@ -13,30 +15,39 @@ sudo npm install -g docker-manager
 ```
 
 Install the systemd service to enable auto start after boot:
+
 ```bash
 sudo docker-manager install
 ```
 
 If you wish to uninstall the systemd service, run:
+
 ```bash
 sudo docker-manager uninstall
 ```
 
 ## Terminology
+
 ### Application
+
 Applications are a collection of services that you would like to run. For example, a typical web application has two services, namely a backend and a frontend.
 
 ### Services
+
 Services are containers that you would like to run. Services are exactly the same as [Docker Compose services](https://docs.docker.com/compose/compose-file/#service-configuration-reference).
 
 ### Containers
+
 Containers are runtime instances of an image. Containers are exactly the same as [Docker containers](https://docs.docker.com/glossary/#container).
 
 ### Images
+
 Images are exactly the same as [Docker images](https://docs.docker.com/glossary/#image).
 
 ## Configuration
+
 You can define applications in `/srv/docker`. These applications need to be defined in [Docker Compose files](https://docs.docker.com/compose/compose-file/). The folder structure should look like this:
+
 ```
 /srv/docker
 ├── application1.yml
@@ -49,9 +60,11 @@ The `common.yml` file is special and can be used to define common networks or vo
 Take a look at the example section below to see what these application definition files might look like.
 
 ## Usage
+
 Docker Manager provides two ways of controlling your applications: a CLI and a web interface.
 
 ### CLI
+
 ```
 Docker Manager CLI
 
@@ -79,10 +92,13 @@ Options:
 ```
 
 ### Web application
-*TODO*
+
+_TODO_
 
 ## Example
+
 ### Configuration
+
 ```
 /srv/docker
 ├── common.yml
@@ -90,6 +106,7 @@ Options:
 ```
 
 The `common.yml` file:
+
 ```yml
 version: '3'
 networks:
@@ -102,6 +119,7 @@ networks:
 ```
 
 The `hello-world.yml` application definition file:
+
 ```yml
 version: '3'
 services:
@@ -118,6 +136,7 @@ services:
 ```
 
 ### Management
+
 ```bash
 # Start all applications
 docker-manager start all

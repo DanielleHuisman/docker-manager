@@ -1,8 +1,7 @@
-import path from 'path';
-
-import {createServer} from '@danielhuisman/koa-base';
+import {createServer} from '@daniellehuisman/koa-base';
 import KoaPug from 'koa-pug';
 import moment from 'moment';
+import path from 'path';
 
 import {config} from './config';
 import {router} from './router';
@@ -34,7 +33,4 @@ app.use(async (ctx, next) => {
     await next();
 });
 
-export {
-    server,
-    app
-};
+export {server, app};

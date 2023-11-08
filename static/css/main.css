@@ -1,4 +1,6 @@
-.btn, .page-item, button.dropdown-item {
+.btn,
+.page-item,
+button.dropdown-item {
     cursor: pointer;
 }
 

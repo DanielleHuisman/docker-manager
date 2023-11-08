@@ -1,8 +1,6 @@
-import {spawn, SpawnOptions} from 'child_process';
-import {Dirent} from 'fs';
+import {type SpawnOptions, spawn} from 'child_process';
+import {readFile, readdir} from 'fs-extra';
 import path from 'path';
-
-import {readdir, readFile} from 'fs-extra';
 import yaml from 'yaml';
 
 import {config} from './config';
@@ -11,7 +9,7 @@ export const getApplicationNames = async () => {
     // Read application directory
     const result = await readdir(config.applications.path, {
         withFileTypes: true
-    }) as Dirent[];
+    });
 
     // Filter by application files
     const applicationNames = result
@@ -26,7 +24,9 @@ export const getServiceNames = async (applicationNames: string[]) => {
     let serviceNames: string[] = [];
 
     for (const applicationName of applicationNames) {
-        const data = yaml.parse(await readFile(path.resolve(config.applications.path, `${applicationName}.yml`), 'utf8'));
+        const data = yaml.parse(
+            await readFile(path.resolve(config.applications.path, `${applicationName}.yml`), 'utf8')
+        ) as Record<string, unknown>;
 
         if (data.services) {
             serviceNames = serviceNames.concat(Object.keys(data.services));
@@ -42,48 +42,57 @@ export const execute = (
     forwardInput: boolean = false,
     forwardOutput: boolean = true,
     filterOutput: boolean = true
-): Promise<void> => new Promise((resolve, reject) => {
-    try {
-        const p = spawn(command, args, {
-            stdio: [
-                forwardInput ? process.stdin : 'ignore',
-                forwardOutput ? (filterOutput ? 'pipe' : process.stdout) : 'ignore',
-                forwardOutput ? (filterOutput ? 'pipe' : process.stdout) : 'ignore'
-            ]
-        });
+): Promise<void> =>
+    new Promise((resolve, reject) => {
+        try {
+            const p = spawn(command, args, {
+                stdio: [
+                    forwardInput ? process.stdin : 'ignore',
+                    forwardOutput ? (filterOutput ? 'pipe' : process.stdout) : 'ignore',
+                    forwardOutput ? (filterOutput ? 'pipe' : process.stdout) : 'ignore'
+                ]
+            });
 
-        if (filterOutput) {
-            p.stdout?.setEncoding('utf-8');
-            p.stdout?.on('data', (data: string) => {
-                if (!data.includes('Found orphan containers')) {
-                    process.stdout.write(data);
-                }
+            if (filterOutput) {
+                p.stdout?.setEncoding('utf-8');
+                p.stdout?.on('data', (data: string) => {
+                    if (!data.includes('Found orphan containers')) {
+                        process.stdout.write(data);
+                    }
+                });
+                p.stderr?.setEncoding('utf-8');
+                p.stderr?.on('data', (data: string) => {
+                    if (!data.includes('Found orphan containers')) {
+                        process.stderr.write(data);
+                    }
+                });
+            }
+
+            p.on('exit', () => {
+                resolve();
             });
-            p.stderr?.setEncoding('utf-8');
-            p.stderr?.on('data', (data: string) => {
-                if (!data.includes('Found orphan containers')) {
-                    process.stderr.write(data);
-                }
+            p.on('error', (err) => {
+                reject(err);
             });
+        } catch (err) {
+            console.error(err);
         }
+    });
 
-        p.on('exit', () => {
-            resolve();
-        });
-        p.on('error', (err) => {
-            reject(err);
-        });
-    } catch (err) {
-        console.error(err);
-    }
-});
+export const getFileArguments = (applicationNames: string[]) =>
+    ['common']
+        .concat(applicationNames)
+        .flatMap((applicationName) => ['-f', path.resolve(config.applications.path, `${applicationName}.yml`)]);
 
-export const getFileArguments = (applicationNames: string[]) => ['common']
-    .concat(applicationNames)
-    .flatMap((applicationName) => ['-f', path.resolve(config.applications.path, `${applicationName}.yml`)]);
-
-export const executeAction = async (applicationNames: string[], action: string | string[], read: boolean = false, filterOutput = false) => {
-    const args = ['compose'].concat(getFileArguments(applicationNames).concat(Array.isArray(action) ? action : [action]));
+export const executeAction = async (
+    applicationNames: string[],
+    action: string | string[],
+    read: boolean = false,
+    filterOutput = false
+) => {
+    const args = ['compose'].concat(
+        getFileArguments(applicationNames).concat(Array.isArray(action) ? action : [action])
+    );
 
     if (read) {
         return await readProcess('docker', args);
@@ -98,12 +107,12 @@ export const readProcess = (command: string, args: string[] = [], options: Spawn
         const p = spawn(command, args, options);
 
         p.stdout?.on('data', (buffer) => {
-            const line = buffer.toString('utf8') as string;
+            const line = (buffer as Buffer).toString('utf8');
             lines = lines.concat(line.split('\n').map((s) => `[out] ${s}`));
         });
 
         p.stderr?.on('data', (buffer) => {
-            const line = buffer.toString('utf8') as string;
+            const line = (buffer as Buffer).toString('utf8');
             lines = lines.concat(line.split('\n').map((s) => `[err] ${s}`));
         });
 
@@ -122,15 +131,20 @@ export const readProcess = (command: string, args: string[] = [], options: Spawn
         });
     });
 
-export const spawnProcess = (command: string, args: string[] = [], options: SpawnOptions = {}, readError: boolean = false): Promise<string[]> =>
+export const spawnProcess = (
+    command: string,
+    args: string[] = [],
+    options: SpawnOptions = {},
+    readError: boolean = false
+): Promise<string[]> =>
     new Promise((fulfill, reject) => {
-        let lines = [];
+        let lines: string[] = [];
         const p = spawn(command, args, options);
 
         const socket = readError ? p.stderr : p.stdout;
 
         socket?.on('data', (buffer) => {
-            const line = buffer.toString('utf8');
+            const line = (buffer as Buffer).toString('utf8');
             lines = lines.concat(line.split('\n'));
         });
 

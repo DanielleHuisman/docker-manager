@@ -1,8 +1,9 @@
-import {startServer, logger} from '@danielhuisman/koa-base';
+import {logger, startServer} from '@daniellehuisman/koa-base';
 
 import {config} from './config';
 import {server} from './server';
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 (async () => {
     try {
         logger.info('Starting Docker Manager...');

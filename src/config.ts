@@ -1,6 +1,8 @@
 import path from 'path';
 
-const staticPath = process.env.STATIC_PATH ? path.resolve(process.env.STATIC_PATH) : path.join(__dirname, '..', 'static');
+const staticPath = process.env.STATIC_PATH
+    ? path.resolve(process.env.STATIC_PATH)
+    : path.join(__dirname, '..', 'static');
 const staticExternalUrl = process.env.STATIC_EXTERNAL_URL || 'http://localhost:5000/static';
 
 export const config = {
