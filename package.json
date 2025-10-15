@@ -30,10 +30,11 @@
     "scripts": {
         "lint": "eslint src",
         "clean": "rimraf dist",
-        "build": "yarn run clean && yarn run build:ts && yarn run build:shebang",
+        "build": "npm run clean && npm run build:ts && npm run build:shebang && npm run build:shebang:cli",
         "build:ts": "tsc",
-        "build:shebang": "echo \"#!/usr/bin/env node\n\n$(cat dist/cli.js)\" > dist/cli.js",
-        "prepublish": "yarn run build",
+        "build:shebang": "echo \"#!/usr/bin/env node\n\n$(cat dist/index.js)\" > dist/index.js",
+        "build:shebang:cli": "echo \"#!/usr/bin/env node\n\n$(cat dist/cli.js)\" > dist/cli.js",
+        "prepublish": "npm run build",
         "start": "dotenv -- node dist/index.js",
         "dev": "dotenv -- nodemon -w src -e ts -x ts-node src/index.ts",
         "dev:cli": "ts-node src/cli.ts"
