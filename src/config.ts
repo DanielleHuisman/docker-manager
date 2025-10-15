@@ -1,9 +1,6 @@
 import path from 'path';
 
 export const config = {
-    host: process.env.HOST ?? 'localhost',
-    port: parseInt(process.env.PORT ?? '', 10) ?? 59247,
-
     manager: {
         path: path.resolve(process.env.MANAGER_PATH ?? '/srv/docker-manager')
     },

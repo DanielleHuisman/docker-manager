@@ -9,8 +9,7 @@ import {config} from './config';
 import {execute, executeAction, getApplicationNames, getContainerId, getServiceNames, isApplication} from './docker';
 import {createToken, deleteToken, getToken, getTokens} from './manager';
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-(async () => {
+void (async () => {
     console.log('Docker Manager CLI');
     console.log();
 
@@ -55,7 +54,17 @@ import {createToken, deleteToken, getToken, getTokens} from './manager';
     const argv = await yargs
         .scriptName('docker-manager')
         .choices('application', applicationNames.concat('all'))
-        .command('install', 'Install systemd service')
+        .command('install', 'Install systemd service', () => {
+            yargs
+                .option('host', {
+                    describe: 'Server host',
+                    default: 'localhost'
+                })
+                .option('port', {
+                    describe: 'Server port',
+                    default: 59247
+                });
+        })
         .command('uninstall', 'Uninstall systemd service')
         .command('list', 'Lists applications')
         .command('services <application>', 'List services of an application', () => {
@@ -243,6 +252,9 @@ import {createToken, deleteToken, getToken, getTokens} from './manager';
     // Handle commands
     switch (command) {
         case 'install': {
+            const host = argv.host as string;
+            const port = argv.port as number;
+
             let paths = ['/usr/bin/docker-manager', '/usr/local/bin/docker-manager'];
 
             // Find location of docker-manager
@@ -301,7 +313,7 @@ import {createToken, deleteToken, getToken, getTokens} from './manager';
             );
             await execute('sed', [
                 '-i',
-                `s|/usr/local/bin/docker-manager-server|${location}|`,
+                `s|/usr/local/bin/docker-manager-server|${location} --host ${host} --port ${port}|`,
                 '/etc/systemd/system/docker-manager-server.service'
             ]);
             console.log('Installed docker-manager-server service to /etc/systemd/system/docker-manager-server.service');

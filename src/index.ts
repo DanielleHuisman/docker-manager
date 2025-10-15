@@ -1,14 +1,32 @@
-import {config} from './config';
+import yargs from 'yargs';
+import {hideBin} from 'yargs/helpers';
+
 import {app} from './server';
 
-try {
-    console.log('Starting Docker Manager...');
+void (async () => {
+    try {
+        const {host, port} = await yargs
+            .scriptName('docker-manager-server')
+            .option('host', {
+                describe: 'Server host',
+                default: 'localhost'
+            })
+            .option('port', {
+                describe: 'Server port',
+                default: 59247
+            })
+            .strict()
+            .help()
+            .wrap(120)
+            .parse(hideBin(process.argv));
 
-    // Start server
-    app.listen(config.port, config.host, () => {
-        console.log(`Server listening on: ${config.host}:${config.port}`);
-        console.log('Started Docker Manager.');
-    });
-} catch (err) {
-    console.error('Failed to start Docker Manager:', err);
-}
+        console.log('Starting Docker Manager...');
+
+        app.listen(port, host, () => {
+            console.log(`Server listening on ${host}:${port}`);
+            console.log('Started Docker Manager.');
+        });
+    } catch (err) {
+        console.error('Failed to start Docker Manager:', err);
+    }
+})();
