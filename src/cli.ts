@@ -452,16 +452,11 @@ import {createToken, deleteToken, getToken, getTokens} from './manager';
             const tokens = await getTokens();
 
             console.log('Tokens:');
-            console.log(
-                tokens
-                    .map(
-                        (token) =>
-                            `- Name: ${token.name}\n  Value: ${token.value}\n  Applications: ${token.applications.join(
-                                ', '
-                            )}`
-                    )
-                    .join('\n')
-            );
+            for (const token of tokens) {
+                console.log(
+                    `- Name: ${token.name}\n  Value: ${token.value}\n  Applications: ${token.applications.join(', ')}`
+                );
+            }
 
             break;
         }
