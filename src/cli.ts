@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import {copy, ensureDir, pathExists, remove} from 'fs-extra';
 import path from 'path';
 import yargs from 'yargs';
@@ -5,7 +6,8 @@ import {hideBin} from 'yargs/helpers';
 
 import {restart, start, stop, update} from './actions';
 import {config} from './config';
-import {execute, executeAction, getApplicationNames, getContainerId, getServiceNames} from './docker';
+import {execute, executeAction, getApplicationNames, getContainerId, getServiceNames, isApplication} from './docker';
+import {createToken, deleteToken, getToken, getTokens} from './manager';
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 (async () => {
@@ -202,6 +204,22 @@ import {execute, executeAction, getApplicationNames, getContainerId, getServiceN
                     });
             }
         )
+        .command('tokens', 'Lists tokens')
+        .command('create-token <name> <applications..>', 'Creates a token', () => {
+            yargs
+                .positional('name', {
+                    describe: 'Name of the token'
+                })
+                .positional('applications', {
+                    describe: 'Applications this token is valid for',
+                    array: true
+                });
+        })
+        .command('delete-token <name>', 'Deletes a token', () => {
+            yargs.positional('name', {
+                describe: 'Name of the token'
+            });
+        })
         .demandCommand()
         .recommendCommands()
         .strict()
@@ -393,6 +411,69 @@ import {execute, executeAction, getApplicationNames, getContainerId, getServiceN
 
             // Execute the specified command using Docker
             await execute('docker', args, true, true, false);
+            break;
+        }
+        case 'tokens': {
+            const tokens = await getTokens();
+
+            console.log('Tokens:');
+            console.log(
+                tokens
+                    .map(
+                        (token) =>
+                            `- Name: ${token.name}\n  Value: ${token.value}\n  Applications: ${token.applications.join(
+                                ', '
+                            )}`
+                    )
+                    .join('\n')
+            );
+
+            break;
+        }
+        case 'create-token': {
+            const name = argv.name as string;
+            const applications = argv.applications as string[];
+
+            if (await getToken(name)) {
+                const message = 'Token name already exists';
+                console.error(message);
+                yargs.exit(1, new Error(message));
+                return;
+            }
+
+            for (const application of applications) {
+                if (!(await isApplication(application))) {
+                    const message = `Unknown application "${application}"`;
+                    console.error(message);
+                    yargs.exit(1, new Error(message));
+                    return;
+                }
+            }
+
+            const token = await createToken({
+                name,
+                value: crypto.randomUUID(),
+                applications
+            });
+
+            console.log(`Name: ${token.name}\nValue: ${token.value}\nApplications: ${token.applications.join(', ')}`);
+
+            break;
+        }
+        case 'delete-token': {
+            const name = argv.name as string;
+
+            const token = await getToken(name);
+            if (!token) {
+                const message = `Unknown token "${name}"`;
+                console.error(message);
+                yargs.exit(1, new Error(message));
+                return;
+            }
+
+            await deleteToken(token.name);
+
+            break;
         }
     }
 })();

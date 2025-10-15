@@ -1,0 +1,12 @@
+[Unit]
+Description=Docker Manager Server
+After=docker.service docker-manager.service network-online.target
+Requires=docker.service network-online.target
+
+[Service]
+WorkingDirectory=/srv/docker-manager
+Type=simple
+ExecStart=/usr/local/bin/docker-manager-server
+
+[Install]
+WantedBy=multi-user.target

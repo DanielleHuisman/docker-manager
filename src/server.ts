@@ -1,36 +1,87 @@
-import {createServer} from '@daniellehuisman/koa-base';
-import KoaPug from 'koa-pug';
-import moment from 'moment';
-import path from 'path';
+import express, {type Request} from 'express';
+import morgan from 'morgan';
 
-import {config} from './config';
-import {router} from './router';
+import {update} from './actions';
+import {isApplication, isService} from './docker';
+import {getTokenByValue} from './manager';
 
-const {server, app} = createServer(config);
+const app = express();
+app.disable('x-powered-by');
+app.use(morgan('combined'));
 
-// Initialize Pug middleware
-const pug = new KoaPug({
-    viewPath: path.join(__dirname, 'views'),
-    locals: {
-        moment
+const authorize = async (req: Request, applicationName: string) => {
+    const authorization = req.get('authorization');
+    if (!authorization || !authorization.startsWith('Bearer ')) {
+        return false;
     }
+
+    const token = await getTokenByValue(authorization.substring(7));
+    if (!token) {
+        return false;
+    }
+
+    if (!token.applications.includes(applicationName)) {
+        return false;
+    }
+
+    return true;
+};
+
+app.post('/applications/:applicationName', async (req, res) => {
+    const {applicationName} = req.params;
+
+    if (!(await isApplication(applicationName))) {
+        res.status(403);
+        res.send(null);
+        return;
+    }
+
+    if (!(await authorize(req, applicationName))) {
+        res.status(403);
+        res.send(null);
+        return;
+    }
+
+    const code = await update([applicationName]);
+    if (typeof code !== 'number' || code !== 0) {
+        res.status(500);
+        res.send(null);
+        return;
+    }
+
+    res.status(204);
+    res.send(null);
 });
-pug.use(app);
 
-// Add dynamic Pug locals
-app.use(async (ctx, next) => {
-    pug.locals.currentUrl = ctx.url;
-    await next();
+app.post('/applications/:applicationName/services/:serviceName', async (req, res) => {
+    const {applicationName, serviceName} = req.params;
+
+    if (!(await isApplication(applicationName)) || !(await isService(applicationName, serviceName))) {
+        res.status(403);
+        res.send(null);
+        return;
+    }
+
+    if (!(await authorize(req, applicationName))) {
+        res.status(403);
+        res.send(null);
+        return;
+    }
+
+    const code = await update([applicationName], [serviceName]);
+    if (typeof code !== 'number' || code !== 0) {
+        res.status(500);
+        res.send(null);
+        return;
+    }
+
+    res.status(204);
+    res.send(null);
 });
 
-// Add router
-app.use(router.routes());
-app.use(router.allowedMethods());
-
-// Handle unknown routes
-app.use(async (ctx, next) => {
-    ctx.error(404, 'Not found');
-    await next();
+app.use((_req, res) => {
+    res.status(403);
+    res.send(null);
 });
 
-export {server, app};
+export {app};

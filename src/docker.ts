@@ -1,5 +1,5 @@
 import {type SpawnOptions, spawn} from 'child_process';
-import {readFile, readdir} from 'fs-extra';
+import {exists, readFile, readdir} from 'fs-extra';
 import path from 'path';
 import yaml from 'yaml';
 
@@ -36,13 +36,21 @@ export const getServiceNames = async (applicationNames: string[]) => {
     return serviceNames;
 };
 
+export const isApplication = async (applicationName: string) =>
+    applicationName !== 'common' && (await exists(path.resolve(config.applications.path, `${applicationName}.yml`)));
+
+export const isService = async (applicationName: string, serviceName: string) => {
+    const serviceNames = await getServiceNames([applicationName]);
+    return serviceNames.includes(serviceName);
+};
+
 export const execute = (
     command: string,
     args: string[],
     forwardInput: boolean = false,
     forwardOutput: boolean = true,
     filterOutput: boolean = true
-): Promise<void> =>
+): Promise<number | null> =>
     new Promise((resolve, reject) => {
         try {
             const p = spawn(command, args, {
@@ -68,8 +76,8 @@ export const execute = (
                 });
             }
 
-            p.on('exit', () => {
-                resolve();
+            p.on('exit', (code) => {
+                resolve(code);
             });
             p.on('error', (err) => {
                 reject(err);

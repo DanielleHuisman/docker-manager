@@ -1,5 +1,5 @@
 [Unit]
-Description=Docker Manager
+Description=Docker Manager Applications
 After=docker.service network-online.target
 Requires=docker.service network-online.target
 

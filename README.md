@@ -61,10 +61,6 @@ Take a look at the example section below to see what these application definitio
 
 ## Usage
 
-Docker Manager provides two ways of controlling your applications: a CLI and a web interface.
-
-### CLI
-
 ```
 Docker Manager CLI
 
@@ -85,15 +81,14 @@ Commands:
   docker-manager logs <application> [services..]                Display logs of an application
   docker-manager exec <application> <service> <command>         Execute a command in the container of a service
   [arguments..]
+  docker-manager tokens                                         Lists tokens
+  docker-manager create-token <name> <applications..>           Creates a token
+  docker-manager delete-token <name>                            Deletes a token
 
 Options:
   --version  Show version number                                                                               [boolean]
   --help     Show help                                                                                         [boolean]
 ```
-
-### Web application
-
-_TODO_
 
 ## Example
 
