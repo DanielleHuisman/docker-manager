@@ -10,6 +10,7 @@ on:
 
 jobs:
     lint:
+        name: Lint
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -27,6 +28,7 @@ jobs:
               run: npm run lint
 
     build:
+        name: Build
         needs: lint
         runs-on: ubuntu-latest
         steps:
