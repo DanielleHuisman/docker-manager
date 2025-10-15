@@ -243,7 +243,7 @@ import {createToken, deleteToken, getToken, getTokens} from './manager';
     // Handle commands
     switch (command) {
         case 'install': {
-            const paths = ['/usr/bin/docker-manager', '/usr/local/bin/docker-manager'];
+            let paths = ['/usr/bin/docker-manager', '/usr/local/bin/docker-manager'];
 
             // Find location of docker-manager
             let location: string | null = null;
@@ -260,7 +260,7 @@ import {createToken, deleteToken, getToken, getTokens} from './manager';
                 return;
             }
 
-            // Copy systemd service file, enable it and start it
+            // Copy applications systemd service file, enable it and start it
             await copy(
                 path.join(__dirname, '..', 'systemd', 'docker-manager.service'),
                 '/etc/systemd/system/docker-manager.service'
@@ -275,6 +275,41 @@ import {createToken, deleteToken, getToken, getTokens} from './manager';
             console.log('Enabled docker-manager service');
             await execute('systemctl', ['start', 'docker-manager']);
             console.log('Started docker-manager service');
+
+            paths = ['/usr/bin/docker-manager-server', '/usr/local/bin/docker-manager-server'];
+
+            // Find location of docker-manager-server
+            location = null;
+            for (const p of paths) {
+                if (await pathExists(p)) {
+                    location = p;
+                    break;
+                }
+            }
+            if (!location) {
+                const message =
+                    'Unable to locate docker-manager-server location, should be in /usr/bin or /usr/local/bin.';
+                console.error(message);
+                yargs.exit(1, new Error(message));
+                return;
+            }
+
+            // Copy server systemd service file, enable it and start it
+            await copy(
+                path.join(__dirname, '..', 'systemd', 'docker-manager-server.service'),
+                '/etc/systemd/system/docker-manager-server.service'
+            );
+            await execute('sed', [
+                '-i',
+                `s|/usr/local/bin/docker-manager-server|${location}|`,
+                '/etc/systemd/system/docker-manager-server.service'
+            ]);
+            console.log('Installed docker-manager-server service to /etc/systemd/system/docker-manager-server.service');
+            await execute('systemctl', ['enable', 'docker-manager-server']);
+            console.log('Enabled docker-manager-server service');
+            await execute('systemctl', ['start', 'docker-manager-server']);
+            console.log('Started docker-manager-server service');
+
             break;
         }
         case 'uninstall': {
