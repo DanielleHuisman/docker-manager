@@ -5,8 +5,8 @@ try {
     console.log('Starting Docker Manager...');
 
     // Start server
-    app.listen(config.port, 'localhost', () => {
-        console.log(`Server listening on http://localhost:${config.port}.`);
+    app.listen(config.port, config.host, () => {
+        console.log(`Server listening on: ${config.host}:${config.port}`);
         console.log('Started Docker Manager.');
     });
 } catch (err) {

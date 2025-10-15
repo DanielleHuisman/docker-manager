@@ -1,13 +1,14 @@
 import path from 'path';
 
 export const config = {
-    port: parseInt(process.env.PORT ?? '', 10) || 59247,
+    host: process.env.HOST ?? 'localhost',
+    port: parseInt(process.env.PORT ?? '', 10) ?? 59247,
 
     manager: {
-        path: path.resolve(process.env.MANAGER_PATH || '/srv/docker-manager')
+        path: path.resolve(process.env.MANAGER_PATH ?? '/srv/docker-manager')
     },
 
     applications: {
-        path: path.resolve(process.env.APPLICATIONS_PATH || '/srv/docker')
+        path: path.resolve(process.env.APPLICATIONS_PATH ?? '/srv/docker')
     }
 };
