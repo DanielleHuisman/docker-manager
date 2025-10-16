@@ -6,7 +6,7 @@ Requires=docker.service network-online.target
 [Service]
 WorkingDirectory=/srv/docker-manager
 Type=simple
-ExecStart=/usr/local/bin/docker-manager-server
+ExecStart=/usr/local/bin/docker-manager server
 
 [Install]
 WantedBy=multi-user.target

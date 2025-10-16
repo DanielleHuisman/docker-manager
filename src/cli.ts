@@ -229,6 +229,17 @@ void (async () => {
                 describe: 'Name of the token'
             });
         })
+        .command('server', 'Runs the server', () => {
+            yargs
+                .option('host', {
+                    describe: 'Server host',
+                    default: 'localhost'
+                })
+                .option('port', {
+                    describe: 'Server port',
+                    default: 59247
+                });
+        })
         .demandCommand()
         .recommendCommands()
         .strict()
@@ -255,7 +266,7 @@ void (async () => {
             const host = argv.host as string;
             const port = argv.port as number;
 
-            let paths = ['/usr/bin/docker-manager', '/usr/local/bin/docker-manager'];
+            const paths = ['/usr/bin/docker-manager', '/usr/local/bin/docker-manager'];
 
             // Find location of docker-manager
             let location: string | null = null;
@@ -288,24 +299,6 @@ void (async () => {
             await execute('systemctl', ['start', 'docker-manager']);
             console.log('Started docker-manager service');
 
-            paths = ['/usr/bin/docker-manager-server', '/usr/local/bin/docker-manager-server'];
-
-            // Find location of docker-manager-server
-            location = null;
-            for (const p of paths) {
-                if (await pathExists(p)) {
-                    location = p;
-                    break;
-                }
-            }
-            if (!location) {
-                const message =
-                    'Unable to locate docker-manager-server location, should be in /usr/bin or /usr/local/bin.';
-                console.error(message);
-                yargs.exit(1, new Error(message));
-                return;
-            }
-
             // Copy server systemd service file, enable it and start it
             await copy(
                 path.join(__dirname, '..', 'systemd', 'docker-manager-server.service'),
@@ -313,7 +306,7 @@ void (async () => {
             );
             await execute('sed', [
                 '-i',
-                `s|/usr/local/bin/docker-manager-server|${location} --host ${host} --port ${port}|`,
+                `s|/usr/local/bin/docker-manager server|${location} server --host ${host} --port ${port}|`,
                 '/etc/systemd/system/docker-manager-server.service'
             ]);
             console.log('Installed docker-manager-server service to /etc/systemd/system/docker-manager-server.service');
@@ -516,6 +509,19 @@ void (async () => {
             await deleteToken(token.name);
 
             break;
+        }
+        case 'server': {
+            const host = argv.host as string;
+            const port = argv.port as number;
+
+            const {app} = await import('./server');
+
+            console.log('Starting server...');
+
+            app.listen(port, host, () => {
+                console.log(`Listening on ${host}:${port}`);
+                console.log('Started server.');
+            });
         }
     }
 })();

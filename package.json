@@ -14,8 +14,8 @@
         "image",
         "management"
     ],
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "main": "./dist/cli.js",
+    "types": "./dist/cli.d.ts",
     "files": [
         "dist",
         "systemd",
@@ -23,17 +23,13 @@
         "README.md",
         "package.json"
     ],
-    "bin": {
-        "docker-manager": "./dist/cli.js",
-        "docker-manager-server": "./dist/index.js"
-    },
+    "bin": "./dist/cli.js",
     "scripts": {
         "lint": "eslint src",
         "clean": "rimraf dist",
-        "build": "npm run clean && npm run build:ts && npm run build:shebang && npm run build:shebang:cli",
+        "build": "npm run clean && npm run build:ts && npm run build:shebang",
         "build:ts": "tsc",
-        "build:shebang": "echo \"#!/usr/bin/env node\n\n$(cat dist/index.js)\" > dist/index.js",
-        "build:shebang:cli": "echo \"#!/usr/bin/env node\n\n$(cat dist/cli.js)\" > dist/cli.js",
+        "build:shebang": "echo \"#!/usr/bin/env node\n\n$(cat dist/cli.js)\" > dist/cli.js",
         "prepublish": "npm run build",
         "start": "dotenv -- node dist/index.js",
         "dev": "dotenv -- nodemon -w src -e ts -x ts-node src/index.ts",
