@@ -1,7 +1,7 @@
 {
     "name": "docker-manager",
     "description": "Simple management tool for Docker containers.",
-    "version": "0.5.6",
+    "version": "0.5.7",
     "license": "MIT",
     "contributors": [
         "Danielle Huisman <danielle@huisman.me> (https://github.com/DanielleHuisman)"
