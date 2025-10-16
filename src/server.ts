@@ -1,4 +1,4 @@
-import express from 'express';
+import express, {type Request} from 'express';
 import morgan from 'morgan';
 
 import {update} from './actions';
@@ -9,8 +9,13 @@ const app = express();
 app.disable('x-powered-by');
 app.use(morgan('combined'));
 
-const authorize = async (applicationName: string, tokenValue: string) => {
-    const token = await getTokenByValue(tokenValue);
+const authorize = async (req: Request, applicationName: string) => {
+    const authorization = req.get('authorization');
+    if (!authorization || !authorization.startsWith('Bearer ')) {
+        return false;
+    }
+
+    const token = await getTokenByValue(authorization.substring(7));
     if (!token) {
         return false;
     }
@@ -22,8 +27,8 @@ const authorize = async (applicationName: string, tokenValue: string) => {
     return true;
 };
 
-app.post('/applications/:applicationName/:tokenValue', async (req, res) => {
-    const {applicationName, tokenValue} = req.params;
+app.post('/applications/:applicationName', async (req, res) => {
+    const {applicationName} = req.params;
 
     if (!(await isApplication(applicationName))) {
         res.status(403);
@@ -31,7 +36,7 @@ app.post('/applications/:applicationName/:tokenValue', async (req, res) => {
         return;
     }
 
-    if (!(await authorize(applicationName, tokenValue))) {
+    if (!(await authorize(req, applicationName))) {
         res.status(403);
         res.send(null);
         return;
@@ -48,8 +53,8 @@ app.post('/applications/:applicationName/:tokenValue', async (req, res) => {
     res.send(null);
 });
 
-app.post('/applications/:applicationName/services/:serviceName/:tokenValue', async (req, res) => {
-    const {applicationName, serviceName, tokenValue} = req.params;
+app.post('/applications/:applicationName/services/:serviceName', async (req, res) => {
+    const {applicationName, serviceName} = req.params;
 
     if (!(await isApplication(applicationName)) || !(await isService(applicationName, serviceName))) {
         res.status(403);
@@ -57,7 +62,7 @@ app.post('/applications/:applicationName/services/:serviceName/:tokenValue', asy
         return;
     }
 
-    if (!(await authorize(applicationName, tokenValue))) {
+    if (!(await authorize(req, applicationName))) {
         res.status(403);
         res.send(null);
         return;
