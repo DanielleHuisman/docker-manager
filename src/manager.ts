@@ -1,8 +1,9 @@
-import {exists, mkdirs, readFile, writeFile} from 'fs-extra';
-import path from 'path';
+import {exists, mkdirs} from 'fs-extra';
+import {readFile, writeFile} from 'node:fs/promises';
+import path from 'node:path';
 import {z} from 'zod';
 
-import {config} from './config';
+import {config} from './config.js';
 
 const tokenSchema = z.object({
     name: z.string(),

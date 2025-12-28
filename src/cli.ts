@@ -1,17 +1,19 @@
 import crypto from 'crypto';
 import {copy, ensureDir, pathExists, remove} from 'fs-extra';
-import path from 'path';
-import yargs from 'yargs';
+import path from 'node:path';
+import Yargs from 'yargs';
 import {hideBin} from 'yargs/helpers';
 
-import {restart, start, stop, update} from './actions';
-import {config} from './config';
-import {execute, executeAction, getApplicationNames, getContainerId, getServiceNames, isApplication} from './docker';
-import {createToken, deleteToken, getToken, getTokens} from './manager';
+import {restart, start, stop, update} from './actions.js';
+import {config} from './config.js';
+import {execute, executeAction, getApplicationNames, getContainerId, getServiceNames, isApplication} from './docker.js';
+import {createToken, deleteToken, getToken, getTokens} from './manager.js';
 
 void (async () => {
     console.log('Docker Manager CLI');
     console.log();
+
+    const yargs = Yargs();
 
     // Ensure the application directory exists
     try {
@@ -29,11 +31,11 @@ void (async () => {
     // Hack to pass remaining arguments to exec command
     let normalArguments: string[] = hideBin(process.argv);
     let execArguments: string[] = [];
-    if (normalArguments.length > 0 && normalArguments[0].toLowerCase() === 'exec') {
+    if (normalArguments.length > 0 && normalArguments[0] && normalArguments[0].toLowerCase() === 'exec') {
         let requiredArgs = 0;
         let i = 1;
         for (; i < normalArguments.length; i++) {
-            const arg = normalArguments[i];
+            const arg = normalArguments[i] as string;
 
             // Skip argument of allowed flags
             if (['-u', '--user', '-e', '--env'].includes(arg.toLowerCase())) {
@@ -247,13 +249,15 @@ void (async () => {
         .wrap(120)
         .parse(normalArguments);
 
+    let command = argv._[0] as string;
+
     // Handle command aliases
-    const aliases = {
+    const aliases: Record<string, string> = {
         status: 'ps'
     };
-    let command = argv._[0];
-    if (aliases[command]) {
-        command = aliases[command] as string;
+    const alias = aliases[command];
+    if (alias) {
+        command = alias;
     }
 
     // Handle special arguments
@@ -418,7 +422,7 @@ void (async () => {
                 return;
             }
 
-            const application = applications[0];
+            const application = applications[0] as string;
             const service = argv.service as string;
 
             // Validate service name
@@ -514,7 +518,7 @@ void (async () => {
             const host = argv.host as string;
             const port = argv.port as number;
 
-            const {app} = await import('./server');
+            const {app} = await import('./server.js');
 
             console.log('Starting server...');
 

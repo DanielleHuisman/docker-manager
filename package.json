@@ -14,14 +14,14 @@
         "image",
         "management"
     ],
+    "type": "module",
     "main": "./dist/cli.js",
     "types": "./dist/cli.d.ts",
     "files": [
         "dist",
         "systemd",
         "LICENSE.md",
-        "README.md",
-        "package.json"
+        "README.md"
     ],
     "bin": "./dist/cli.js",
     "scripts": {
@@ -32,15 +32,10 @@
         "build:shebang": "echo \"#!/usr/bin/env node\n\n$(cat dist/cli.js)\" > dist/cli.js",
         "prepublish": "npm run build",
         "start": "dotenv -- node dist/index.js",
-        "dev": "dotenv -- nodemon -w src -e ts -x ts-node src/index.ts",
-        "dev:cli": "ts-node src/cli.ts"
+        "dev": "dotenv -- nodemon -w src -e ts -x tsx src/index.ts",
+        "dev:cli": "tsx src/cli.ts"
     },
     "dependencies": {
-        "@types/express": "^5.0.3",
-        "@types/fs-extra": "^11.0.4",
-        "@types/morgan": "^1.9.10",
-        "@types/node": "^24.7.2",
-        "@types/yargs": "^17.0.33",
         "express": "^5.1.0",
         "fs-extra": "^11.3.2",
         "moment": "^2.30.1",
@@ -50,15 +45,23 @@
         "zod": "^4.1.12"
     },
     "devDependencies": {
+        "@eslint/js": "^9.15.0",
         "@trivago/prettier-plugin-sort-imports": "^6.0.0",
-        "@typescript-eslint/eslint-plugin": "^6.10.0",
-        "@typescript-eslint/parser": "^6.10.0",
+        "@types/express": "^5.0.3",
+        "@types/fs-extra": "^11.0.4",
+        "@types/morgan": "^1.9.10",
+        "@types/node": "^24.7.2",
+        "@types/yargs": "^17.0.33",
+        "@typescript-eslint/parser": "^8.50.1",
         "dotenv-cli": "^11.0.0",
-        "eslint": "^8.53.0",
+        "eslint": "^9.15.0",
+        "eslint-import-resolver-typescript": "^4.0.0",
+        "eslint-plugin-import": "^2.31.0",
         "nodemon": "^3.1.10",
         "prettier": "^3.6.2",
         "rimraf": "^6.0.1",
-        "ts-node": "^10.9.2",
-        "typescript": "^5.9.3"
+        "tsx": "^4.21.0",
+        "typescript": "^5.9.3",
+        "typescript-eslint": "^8.16.0"
     }
 }
