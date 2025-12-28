@@ -1,9 +1,9 @@
 import express, {type Request} from 'express';
 import morgan from 'morgan';
 
-import {update} from './actions';
-import {isApplication, isService} from './docker';
-import {getTokenByValue} from './manager';
+import {update} from './actions.js';
+import {isApplication, isService} from './docker.js';
+import {getTokenByValue} from './manager.js';
 
 const app = express();
 app.disable('x-powered-by');
@@ -11,7 +11,7 @@ app.use(morgan('combined'));
 
 const authorize = async (req: Request, applicationName: string) => {
     const authorization = req.get('authorization');
-    if (!authorization || !authorization.startsWith('Bearer ')) {
+    if (!authorization?.startsWith('Bearer ')) {
         return false;
     }
 

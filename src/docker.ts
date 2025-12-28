@@ -1,9 +1,10 @@
-import {type SpawnOptions, spawn} from 'child_process';
-import {exists, readFile, readdir} from 'fs-extra';
-import path from 'path';
+import {exists} from 'fs-extra';
+import {type SpawnOptions, spawn} from 'node:child_process';
+import {readFile, readdir} from 'node:fs/promises';
+import path from 'node:path';
 import yaml from 'yaml';
 
-import {config} from './config';
+import {config} from './config.js';
 
 export const getApplicationNames = async () => {
     // Read application directory
@@ -47,9 +48,9 @@ export const isService = async (applicationName: string, serviceName: string) =>
 export const execute = (
     command: string,
     args: string[],
-    forwardInput: boolean = false,
-    forwardOutput: boolean = true,
-    filterOutput: boolean = true
+    forwardInput = false,
+    forwardOutput = true,
+    filterOutput = true
 ): Promise<number | null> =>
     new Promise((resolve, reject) => {
         try {
@@ -95,7 +96,7 @@ export const getFileArguments = (applicationNames: string[]) =>
 export const executeAction = async (
     applicationNames: string[],
     action: string | string[],
-    read: boolean = false,
+    read = false,
     filterOutput = false
 ) => {
     const args = ['compose'].concat(
@@ -135,7 +136,7 @@ export const readProcess = (command: string, args: string[] = [], options: Spawn
         p.stderr?.on('close', finish);
         p.on('exit', finish);
         p.on('error', (err) => {
-            return reject(err);
+            reject(err);
         });
     });
 
@@ -143,7 +144,7 @@ export const spawnProcess = (
     command: string,
     args: string[] = [],
     options: SpawnOptions = {},
-    readError: boolean = false
+    readError = false
 ): Promise<string[]> =>
     new Promise((fulfill, reject) => {
         let lines: string[] = [];
@@ -166,7 +167,7 @@ export const spawnProcess = (
         socket?.on('close', finish);
         p.on('exit', finish);
         p.on('error', (err) => {
-            return reject(err);
+            reject(err);
         });
     });
 
@@ -175,5 +176,5 @@ export const getContainerId = async (applicationName: string, serviceName: strin
 
     const output = await spawnProcess('docker', args);
 
-    return output[0];
+    return output[0] as string;
 };

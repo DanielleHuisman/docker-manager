@@ -1,10 +1,10 @@
-import {executeAction} from './docker';
+import {executeAction} from './docker.js';
 
-export const start = async (applications: string[], services: string[] = [], read: boolean = false) => {
+export const start = async (applications: string[], services: string[] = [], read = false) => {
     return await executeAction(applications, ['up', '-d'].concat(services), read, true);
 };
 
-export const stop = async (applications: string[], services: string[] = [], read: boolean = false) => {
+export const stop = async (applications: string[], services: string[] = [], read = false) => {
     if (services.length === 0) {
         return await executeAction(applications, ['down'], read, true);
     } else {
@@ -12,7 +12,7 @@ export const stop = async (applications: string[], services: string[] = [], read
     }
 };
 
-export const restart = async (applications: string[], services: string[] = [], read: boolean = false) => {
+export const restart = async (applications: string[], services: string[] = [], read = false) => {
     const code = await stop(applications, services, read);
     if (!read && typeof code === 'number' && code !== 0) {
         return code;
@@ -21,7 +21,7 @@ export const restart = async (applications: string[], services: string[] = [], r
     return await start(applications, services, read);
 };
 
-export const update = async (applications: string[], services: string[] = [], read: boolean = false) => {
+export const update = async (applications: string[], services: string[] = [], read = false) => {
     const code = await executeAction(applications, ['pull'].concat(services), read, false);
     if (!read && typeof code === 'number' && code !== 0) {
         return code;
