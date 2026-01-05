@@ -31,7 +31,7 @@ void (async () => {
     // Hack to pass remaining arguments to exec command
     let normalArguments: string[] = hideBin(process.argv);
     let execArguments: string[] = [];
-    if (normalArguments.length > 0 && normalArguments[0] && normalArguments[0].toLowerCase() === 'exec') {
+    if (normalArguments.length > 0 && normalArguments[0]?.toLowerCase() === 'exec') {
         let requiredArgs = 0;
         let i = 1;
         for (; i < normalArguments.length; i++) {
