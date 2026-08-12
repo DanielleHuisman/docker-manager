@@ -1,10 +1,24 @@
 {
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
     "extends": [
         "config:recommended",
         "schedule:weekly",
-        ":automergeDigest",
-        ":automergeMinor",
         ":prConcurrentLimitNone",
-        ":prHourlyLimitNone"
-    ]
+        ":prHourlyLimitNone",
+        ":semanticCommits",
+        ":semanticCommitTypeAll(build)"
+    ],
+    "packageRules": [
+        {
+            "minimumReleaseAge": "7 days"
+        },
+        {
+            "automerge": true,
+            "matchCurrentVersion": "!/^0/",
+            "matchUpdateTypes": ["minor", "patch"]
+        }
+    ],
+    "pre-commit": {
+        "enabled": true
+    }
 }
